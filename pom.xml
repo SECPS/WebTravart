@@ -95,12 +95,12 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>at.jku.cps.travart</groupId>
 			<artifactId>travart</artifactId>
 			<version>0.0.1</version>
 			<type>pom</type>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>de.neominik</groupId>
 			<artifactId>uvl</artifactId>
