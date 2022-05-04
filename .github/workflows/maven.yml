@@ -24,7 +24,7 @@ jobs:
         cache: maven
     - name: Install local dependencies
       run: |
-        mvn install:install-file -Dfile="travart/lib/uvl-parser-0.1.0-SNAPSHOT-standalone.jar" -DgroupId="de.neominik" -DartifactId="uvl" -Dversion="0.1.0-SNAPSHOT" -Dpackaging="jar"
+        mvn install:install-file -Dfile="lib/uvl-parser-0.1.0-SNAPSHOT-standalone.jar" -DgroupId="de.neominik" -DartifactId="uvl" -Dversion="0.1.0-SNAPSHOT" -Dpackaging="jar"
     - name: Build with Maven
       run: |
         chmod +x mvnw
