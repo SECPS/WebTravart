@@ -25,6 +25,8 @@ jobs:
     - name: Build with Maven
       run: ./mvnw clean package -Pproduction
     - name: Assemble artifacts
+      run: |
+        echo "Publishing artifacts"
     - uses: actions/upload-artifact@v1
       with:
          name: Jars and test reports
