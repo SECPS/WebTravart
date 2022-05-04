@@ -35,4 +35,4 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
          name: Jars and test reports
-         path: target/webtravart**.jar
+         path: target/
