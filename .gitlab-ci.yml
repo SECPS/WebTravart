@@ -44,7 +44,7 @@ cache:
       - $CI_COMMIT_BRANCH == 'main'
 
 # Verify merge requests using JDK8
-build:jdk8:
+build:jdk11:
   <<: *build
   
 
@@ -52,7 +52,7 @@ build:jdk8:
 # For deploying packages to GitLab's Maven Repository: See https://docs.gitlab.com/ee/user/packages/maven_repository/index.html#create-maven-packages-with-gitlab-cicd for more details.
 # Please note: The GitLab Maven Repository is currently only available in GitLab Premium / Ultimate.
 # For `master` branch run `mvn deploy` automatically.
-deploy:jdk8:
+deploy:jdk11:
   stage: deploy
   script:
     - if [ ! -f ci_settings.xml ];
