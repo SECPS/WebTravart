@@ -37,6 +37,7 @@ image: maven:3.8-openjdk-11
 .build: &build
   stage: build
   script:
+    - 'chmod +x mvnw'
     - './mvnw $MAVEN_CLI_OPTS_PROD'
   except:
     variables:
