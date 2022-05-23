@@ -24,7 +24,7 @@ variables:
   MAVEN_CLI_OPTS_PROD: "clean package -Pproduction"
 
 # This template uses jdk8 for verifying and deploying images
-image: maven:3.8-openjdk-11
+image: maven:3.8-jdk-11
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
