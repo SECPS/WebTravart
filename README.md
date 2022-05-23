@@ -1,7 +1,6 @@
 # WebTravart
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+This project will be used build a web interface for students and researches to try out the capabilities of Travart.
 
 ## Running the application
 
