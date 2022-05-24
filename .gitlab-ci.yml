@@ -15,6 +15,12 @@
 # * Deploy built artifacts from master branch only.
 
 variables:
+  DEPLOY_KEY: $deploy_key
+  SSH_PORT: 22
+  URL: $url_server
+  REMOTE_FOLDER: $remote_folder
+  DEPLOY_USER: $deploy_user
+  
   # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
@@ -28,9 +34,9 @@ image: maven:3.8-jdk-11
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
-cache:
-  paths:
-    - .m2/repository
+#cache:
+#  paths:
+#    - .m2/repository
 
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
@@ -55,11 +61,11 @@ build:jdk11:
 deploy:jdk11:
   stage: deploy
   script:
-    - if [ ! -f ci_settings.xml ];
-        then echo "CI settings missing\! If deploying to GitLab Maven Repository, please see https://docs.gitlab.com/ee/user/packages/maven_repository/index.html#create-maven-packages-with-gitlab-cicd for instructions.";
-      fi
     - 'chmod +x mvnw'
-    - 'mvn $MAVEN_CLI_OPTS_PROD '
+    - 'mvn $MAVEN_CLI_OPTS_PROD'
+    - 'rsync -av --delete -e "ssh -i $DEPLOY_KEY" $DEPLOY_USER@$URL:$REMOTE_FOLDER target/travert.war'
+    - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart apache2"'
+    - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart tomcat9"'
   only:
     variables:
       - $CI_COMMIT_BRANCH == 'main'
