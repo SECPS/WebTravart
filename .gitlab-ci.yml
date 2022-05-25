@@ -37,6 +37,7 @@ variables:
   # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
   # when running from the command line.
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
+  MAVEN_CLI_SETTINGS: "-s .mvn/wrapper/settings.xml"
   MAVEN_CLI_OPTS_PROD: "clean package -Pproduction"
   
 
@@ -55,7 +56,7 @@ cache:
   stage: build
   script:
     - 'chmod +x mvnw'
-    - './mvnw $MAVEN_OPTS $MAVEN_CLI_OPTS_PROD'
+    - './mvnw $MAVEN_CLI_OPTS_PROD $MAVEN_CLI_SETTINGS'
   except:
     variables:
       - $CI_COMMIT_BRANCH == 'main'
@@ -73,7 +74,7 @@ deploy:jdk11:
   stage: deploy
   script:
     - 'chmod +x mvnw'
-    - 'mvn $MAVEN_OPTS $MAVEN_CLI_OPTS_PROD'
+    - 'mvn $MAVEN_CLI_OPTS_PROD $MAVEN_CLI_SETTINGS'
     - 'rsync -av --delete -e "ssh -i $DEPLOY_KEY" $DEPLOY_USER@$URL:$REMOTE_FOLDER target/travert.war'
     - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart apache2"'
     - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart tomcat9"'
