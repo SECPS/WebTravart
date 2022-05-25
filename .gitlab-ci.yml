@@ -23,20 +23,21 @@ variables:
   
   # JKU Proxy settings
   LC_ALL: en_US.UTF-8
-  http_proxy: http://140.78.3.1:3128
-  https_proxy: http://140.78.3.1:3128
-  HTTP_PROXY: http://140.78.3.1:3128
-  HTTPS_PROXY: http://140.78.3.1:3128
+  PROXY_PORT: 3128
+  http_proxy: http://140.78.3.1
+  https_proxy: http://140.78.3.1
+  HTTP_PROXY: http://140.78.3.1
+  HTTPS_PROXY: http://140.78.3.1
   no_proxy: .jku.at,.im.intern,140.78.,127.,172.17.,172.18.,localhost,gitti.im.intern,artifactory.im.jku.at,sourcery.im.jku.at
   NO_PROXY: .jku.at,.im.intern,140.78.,127.,172.17.,172.18.,localhost,gitti.im.intern,artifactory.im.jku.at,sourcery.im.jku.at
   
   # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
-  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -DproxySet=true -Dhttp.proxyHost=$HTTP_PROXY -Dhttp.proxyPort=$PROXY_PORT -Dhttp.nonProxyHosts=.jku.at,.im.intern,140.78.,127.,172.17.,172.18.,localhost,gitti.im.intern,artifactory.im.jku.at,sourcery.im.jku.a"
   # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
   # when running from the command line.
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
-  MAVEN_CLI_OPTS_PROD: "clean -X package -Pproduction"
+  MAVEN_CLI_OPTS_PROD: "clean package -Pproduction"
   
 
 # This template uses jdk8 for verifying and deploying images
@@ -54,7 +55,7 @@ cache:
   stage: build
   script:
     - 'chmod +x mvnw'
-    - './mvnw $MAVEN_CLI_OPTS_PROD'
+    - './mvnw $MAVEN_OPTS $MAVEN_CLI_OPTS_PROD'
   except:
     variables:
       - $CI_COMMIT_BRANCH == 'main'
