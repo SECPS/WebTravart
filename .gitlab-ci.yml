@@ -75,7 +75,7 @@ deploy:jdk11:
   script:
     - 'chmod +x mvnw'
     - 'mvn $MAVEN_CLI_OPTS_PROD $MAVEN_CLI_SETTINGS'
-    - 'rsync -av --delete -e "ssh -i $DEPLOY_KEY" $DEPLOY_USER@$URL:$REMOTE_FOLDER target/travert.war'
+    - 'rsync -av --delete -e "ssh -i $DEPLOY_KEY" $DEPLOY_USER@$URL:$REMOTE_FOLDER target/travart.war'
     - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart apache2"'
     - 'ssh -i $DEPLOY_KEY $URL "sudo /usr/bin/systemctl restart tomcat9"'
   only:
