@@ -4,7 +4,7 @@
         <proxy>
             <id>JKU-proxy</id>
             <active>true</active>
-            <protocol>https</protocol>
+            <protocol>http</protocol>
             <host>140.78.3.1</host>
             <port>3128</port>
             <username>proxyuser</username>
