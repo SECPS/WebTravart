@@ -12,4 +12,15 @@
             <nonProxyHosts>.jku.at,.im.intern,140.78.,127.,172.17.,172.18.,localhost,gitti.im.intern,artifactory.im.jku.at,sourcery.im.jku.at</nonProxyHosts>
         </proxy>
     </proxies>
+	<server>
+  <id>central</id>
+  <configuration>
+    <httpConfiguration>
+      <all>
+        <connectionTimeout>120000</connectionTimeout>
+        <readTimeout>120000</readTimeout>
+      </all>
+    </httpConfiguration>
+  </configuration>
+</server>
   </settings>
