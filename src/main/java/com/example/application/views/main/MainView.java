@@ -3,7 +3,6 @@ package com.example.application.views.main;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -17,6 +16,10 @@ import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Travart Online")
 public class MainView extends AppLayout{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4920006999153529869L;
 	private Tabs tabs;
 	
 	MainView(){

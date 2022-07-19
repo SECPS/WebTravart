@@ -42,6 +42,10 @@ import de.neominik.uvl.ast.UVLModel;
 @PageTitle("Travart Online | UVL Upload")
 public class UploadView extends VerticalLayout {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2306696766319627373L;
 	private static final int MAX_COL = 6;
 	private MemoryBuffer memoryBuffer = new MemoryBuffer();
 	private Upload singleFileUpload = new Upload(memoryBuffer);

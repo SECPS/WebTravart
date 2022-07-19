@@ -15,6 +15,11 @@ import com.vaadin.flow.router.RouteAlias;
 @RouteAlias(value= "",layout=MainView.class)
 public class HomeView extends VerticalLayout {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2127362591074186330L;
+
 	public HomeView() {
 		H2 title= new H2("Travart Online");
 		Div wrapper= new Div();

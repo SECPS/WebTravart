@@ -16,6 +16,11 @@ import com.vaadin.flow.router.Route;
 public class ImpressumView extends VerticalLayout {
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3814094465013323203L;
+
 	public ImpressumView(){
 		H2 title = new H2("Impressum");
 		UnorderedList ol= new UnorderedList();
