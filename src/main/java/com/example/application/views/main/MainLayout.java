@@ -14,10 +14,11 @@ public class MainLayout extends AppLayout {
 	public MainLayout() {
         createHeader();
         createDrawer();
+        
     }
 
     private void createHeader() {
-        H1 logo = new H1("Travart online");
+        H1 logo = new H1("Travart Online");
         logo.addClassNames("text-l", "m-m");
 
         HorizontalLayout header = new HorizontalLayout(
@@ -34,11 +35,21 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
+    	RouterLink homeView= new RouterLink("Home",HomeView.class);
+    	homeView.setHighlightCondition(HighlightConditions.sameLocation()); 
+
         RouterLink uploadLink = new RouterLink("UVL Upload", UvlUpload.class); 
         uploadLink.setHighlightCondition(HighlightConditions.sameLocation()); 
+        
+        RouterLink impressumLink = new RouterLink("Impressum", ImpressumView.class); 
+        impressumLink.setHighlightCondition(HighlightConditions.sameLocation()); 
+        
+        
 
-        addToDrawer(new VerticalLayout( 
-            uploadLink
+        addToDrawer(new VerticalLayout(homeView,
+            uploadLink,impressumLink
         ));
+        
+        
     }
 }
