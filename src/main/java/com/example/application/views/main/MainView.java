@@ -15,7 +15,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Travart Online")
-public class MainView extends AppLayout {
+public class MainView extends AppLayout{
 	private Tabs tabs;
 	
 	MainView(){
@@ -24,10 +24,10 @@ public class MainView extends AppLayout {
 	}
 	
 	private void createHeader() {
-		H1 logo = new H1("Travart Online");
-		logo.addClassNames("text-l", "m-m");
+		H1 banner = new H1("Travart Online");
+		banner.addClassNames("text-m", "m-0");
 
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo);
+		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), banner);
 
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 		header.setWidth("100%");
@@ -54,7 +54,7 @@ public class MainView extends AppLayout {
 		Class<? extends VerticalLayout> c=null;
 		switch(viewName) {
 		case "Home": c=HomeView.class;break;
-		case "Converter": c=UvlUpload.class;break;
+		case "Converter": c=UploadView.class;break;
 		case "Impressum": c=ImpressumView.class;break;
 		default:
 			c=HomeView.class;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.UnorderedList;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -17,7 +17,7 @@ public class ImpressumView extends VerticalLayout {
 	
 	
 	public ImpressumView(){
-		H1 title = new H1("Impressum");
+		H2 title = new H2("Impressum");
 		UnorderedList ol= new UnorderedList();
 		List<ListItem> listItemList = new ArrayList<>();
 		listItemList.add(new ListItem("Johannes Kepler Universität Linz - LIT CPS Lab"));

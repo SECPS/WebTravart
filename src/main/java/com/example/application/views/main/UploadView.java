@@ -18,7 +18,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
@@ -40,7 +40,7 @@ import de.neominik.uvl.ast.UVLModel;
 
 @Route(value="upload", layout= MainView.class)
 @PageTitle("Travart Online | UVL Upload")
-public class UvlUpload extends VerticalLayout {
+public class UploadView extends VerticalLayout {
 	
 	private static final int MAX_COL = 6;
 	private MemoryBuffer memoryBuffer = new MemoryBuffer();
@@ -52,8 +52,8 @@ public class UvlUpload extends VerticalLayout {
 	private List<DopplerDecisionData> decisions=new ArrayList<>();
 	
 
-	public UvlUpload() {
-		H1 title = new H1("Upload UVL model file");
+	public UploadView() {
+		H2 title = new H2("Upload UVL model file");
 		Paragraph hint = new Paragraph("Only one .uvl or .txt file is allowed for upload.");
 		singleFileUpload.setAcceptedFileTypes(".uvl", ".txt", ".xls", ".xlsx",".csv");
 		singleFileUpload.addFileRejectedListener(event -> {
@@ -162,7 +162,6 @@ public class UvlUpload extends VerticalLayout {
 		String contents = null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
-			System.out.println(contents);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -172,6 +171,7 @@ public class UvlUpload extends VerticalLayout {
 			TextArea textArea = new TextArea();
 			textArea.setReadOnly(true);
 			textArea.setWidthFull();
+			textArea.setMaxHeight("600px");
 			textArea.setLabel("UVL Model");
 			textArea.setValue(model.toString());
 			add(textArea);
