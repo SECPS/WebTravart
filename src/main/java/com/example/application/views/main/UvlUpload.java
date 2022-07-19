@@ -38,7 +38,7 @@ import com.vaadin.flow.router.Route;
 import de.neominik.uvl.UVLParser;
 import de.neominik.uvl.ast.UVLModel;
 
-@Route(value="upload", layout= MainLayout.class)
+@Route(value="upload", layout= MainView.class)
 @PageTitle("Travart Online | UVL Upload")
 public class UvlUpload extends VerticalLayout {
 	

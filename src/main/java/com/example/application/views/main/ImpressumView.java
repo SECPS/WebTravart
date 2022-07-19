@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route(value="impressum", layout=MainLayout.class)
+@Route(value="impressum", layout=MainView.class)
 @PageTitle("Travart Online | Impressum")
 public class ImpressumView extends VerticalLayout {
 	

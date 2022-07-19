@@ -1,58 +1,85 @@
 package com.example.application.views.main;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.poi.ss.formula.functions.Column;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import com.example.application.data.DopplerDecisionData;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-
-import de.neominik.uvl.UVLParser;
-import de.neominik.uvl.ast.UVLModel;
+import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Travart Online")
-@Route(value = "")
-public class MainView extends VerticalLayout {
-
+public class MainView extends AppLayout {
+	private Tabs tabs;
 	
 	MainView(){
-		add(new MainLayout());
+		createHeader();
+		createDrawer();
 	}
 	
+	private void createHeader() {
+		H1 logo = new H1("Travart Online");
+		logo.addClassNames("text-l", "m-m");
+
+		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo);
+
+		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+		header.setWidth("100%");
+		header.addClassNames("py-0", "px-m");
+
+		addToNavbar(header);
+
+	}
+
+	private Tabs getTabs() {
+		if (tabs == null)
+			tabs = new Tabs();
+		tabs.add(createTab(VaadinIcon.HOME, "Home"),
+				createTab(VaadinIcon.MAGIC, "Converter"),
+				createTab(VaadinIcon.SCALE, "Impressum"));
+		tabs.setOrientation(Tabs.Orientation.VERTICAL);
+		return tabs;
+	}
+
+	private Tab createTab(VaadinIcon viewIcon, String viewName) {
+		Icon icon = viewIcon.create();
+		icon.getStyle().set("box-sizing", "border-box").set("margin-inline-end", "var(--lumo-space-m)")
+				.set("margin-inline-start", "var(--lumo-space-xs)").set("padding", "var(--lumo-space-xs)");
+		Class<? extends VerticalLayout> c=null;
+		switch(viewName) {
+		case "Home": c=HomeView.class;break;
+		case "Converter": c=UvlUpload.class;break;
+		case "Impressum": c=ImpressumView.class;break;
+		default:
+			c=HomeView.class;
+		}
+		RouterLink link = new RouterLink("",c);
+		link.add(icon, new Span(viewName));
+		// Demo has no routes
+		// link.setRoute(viewClass.java);
+		link.setTabIndex(0);
+
+		return new Tab(link);
+	}
+
+	private void createDrawer() {
+//		RouterLink homeView = new RouterLink("Home", HomeView.class);
+//		homeView.setHighlightCondition(HighlightConditions.sameLocation());
+//
+//		RouterLink uploadLink = new RouterLink("UVL Upload", UvlUpload.class);
+//		uploadLink.setHighlightCondition(HighlightConditions.sameLocation());
+//
+//		RouterLink impressumLink = new RouterLink("Impressum", ImpressumView.class);
+//		impressumLink.setHighlightCondition(HighlightConditions.sameLocation());
+
+//		addToDrawer(new VerticalLayout(homeView, uploadLink, impressumLink));
+		addToDrawer(getTabs());
+	}
 	
 }
