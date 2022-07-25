@@ -1,7 +1,8 @@
 package com.example.application.views.main;
 
-
 import com.example.application.views.icons.CustomIcon;
+import com.vaadin.componentfactory.ToggleButton;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
@@ -20,32 +22,30 @@ import com.vaadin.flow.router.RouterLink;
 
 @JsModule("icons/custom-iconset.js")
 @PageTitle("Travart Online")
-public class MainView extends AppLayout{
+public class MainView extends AppLayout {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4920006999153529869L;
 	private Tabs tabs;
-	
-	MainView(){
+
+	MainView() {
 		createHeader();
 		createDrawer();
 	}
-	
+
 	private void createHeader() {
 		Icon image = CustomIcon.LOGO.create();
-		
-		H1 banner = new H1("Travart Online");
-		banner.getStyle()
-	      .set("font-size", "var(--lumo-font-size-l)")
-	      .set("margin", "0");
 
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(),image, banner);
+		H1 banner = new H1("Travart Online");
+		banner.getStyle().set("font-size", "var(--lumo-font-size-l)").set("margin", "0");
+
+		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), image, banner);
 
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 		header.setWidth("100%");
 		header.addClassNames("py-0", "px-m");
-		
+
 		addToNavbar(header);
 
 	}
@@ -53,8 +53,7 @@ public class MainView extends AppLayout{
 	private Tabs getTabs() {
 		if (tabs == null)
 			tabs = new Tabs();
-		tabs.add(createTab(VaadinIcon.HOME, "Home"),
-				createTab(CustomIcon.LOGO, "Converter"),
+		tabs.add(createTab(VaadinIcon.HOME, "Home"), createTab(CustomIcon.LOGO, "Converter"),
 				createTab(VaadinIcon.SCALE, "Impressum"));
 		tabs.setOrientation(Tabs.Orientation.VERTICAL);
 		return tabs;
@@ -64,15 +63,21 @@ public class MainView extends AppLayout{
 		Icon icon = viewIcon.create();
 		icon.getStyle().set("box-sizing", "border-box").set("margin-inline-end", "var(--lumo-space-m)")
 				.set("margin-inline-start", "var(--lumo-space-xs)").set("padding", "var(--lumo-space-xs)");
-		Class<? extends VerticalLayout> c=null;
-		switch(viewName) {
-		case "Home": c=HomeView.class;break;
-		case "Converter": c=ConvertView.class;break;
-		case "Impressum": c=ImpressumView.class;break;
+		Class<? extends VerticalLayout> c = null;
+		switch (viewName) {
+		case "Home":
+			c = HomeView.class;
+			break;
+		case "Converter":
+			c = ConvertView.class;
+			break;
+		case "Impressum":
+			c = ImpressumView.class;
+			break;
 		default:
-			c=HomeView.class;
+			c = HomeView.class;
 		}
-		RouterLink link = new RouterLink("",c);
+		RouterLink link = new RouterLink("", c);
 		link.add(icon, new Span(viewName));
 		link.setTabIndex(0);
 
@@ -81,6 +86,33 @@ public class MainView extends AppLayout{
 
 	private void createDrawer() {
 		addToDrawer(getTabs());
+		addToDrawer(getThemeButton());
 	}
-	
+
+	private VerticalLayout getThemeButton() {
+		VerticalLayout vert = new VerticalLayout();
+		HorizontalLayout hor=new HorizontalLayout();
+		ToggleButton tog = new ToggleButton();
+		Icon sun= new Icon(VaadinIcon.SUN_O);
+		Icon moon= new Icon(VaadinIcon.MOON_O);
+		vert.setHeight("80%");
+		vert.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+		tog.setLabel("Change theme");
+		tog.addValueChangeListener(evt -> {
+			Page page = UI.getCurrent().getPage();
+			if (evt.getValue()) {
+				page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"dark\")");
+				hor.remove(moon);
+				hor.addComponentAsFirst(sun);
+			} else {
+				page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"light\")");
+				hor.remove(sun);
+				hor.addComponentAsFirst(moon);
+			}
+		});
+		hor.add(moon,tog);
+		vert.add(hor);
+		return vert;
+	}
+
 }

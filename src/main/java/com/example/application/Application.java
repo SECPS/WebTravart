@@ -18,7 +18,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  *
  */
 @SpringBootApplication
-@Theme(themeClass = Lumo.class, variant = Lumo.DARK)
+@Theme(themeClass = Lumo.class, variant = Lumo.LIGHT)
 @PWA(name = "Travart Online", shortName = "Travart Online", offlineResources = {})
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
