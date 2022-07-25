@@ -38,9 +38,9 @@ import com.vaadin.flow.router.Route;
 import de.neominik.uvl.UVLParser;
 import de.neominik.uvl.ast.UVLModel;
 
-@Route(value="upload", layout= MainView.class)
-@PageTitle("Travart Online | UVL Upload")
-public class UploadView extends VerticalLayout {
+@Route(value="convert", layout= MainView.class)
+@PageTitle("Travart Online | Converter")
+public class ConvertView extends VerticalLayout {
 	
 	/**
 	 * 
@@ -56,8 +56,8 @@ public class UploadView extends VerticalLayout {
 	private List<DopplerDecisionData> decisions=new ArrayList<>();
 	
 
-	public UploadView() {
-		H2 title = new H2("Upload UVL model file");
+	public ConvertView() {
+		H2 title = new H2("Convert UVL model file");
 		Paragraph hint = new Paragraph("Only one .uvl or .txt file is allowed for upload.");
 		singleFileUpload.setAcceptedFileTypes(".uvl", ".txt", ".xls", ".xlsx",".csv");
 		singleFileUpload.addFileRejectedListener(event -> {
