@@ -1,5 +1,13 @@
 package com.example.application.views.main;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.servlet.http.Cookie;
+
 import com.example.application.views.icons.CustomIcon;
 import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.UI;
@@ -19,6 +27,7 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinService;
 
 @JsModule("icons/custom-iconset.js")
 @PageTitle("Travart Online")
@@ -26,12 +35,56 @@ public class MainView extends AppLayout {
 	/**
 	 * 
 	 */
+	private VerticalLayout vert = new VerticalLayout();
+	private HorizontalLayout hor=new HorizontalLayout();
+	private ToggleButton tog = new ToggleButton();
+	private Icon sun= new Icon(VaadinIcon.SUN_O);
+	private Icon moon= new Icon(VaadinIcon.MOON_O);
+	private static final String COOKIE_THEME= "theme";
+	private static final String THEME_DARK="dark";
+	private static final String THEME_LIGHT="light";
 	private static final long serialVersionUID = 4920006999153529869L;
 	private Tabs tabs;
+	Map<String,Cookie> cookies=new HashMap<>(); 
 
-	MainView() {
+	MainView() {		
+		initCookies(cookies);
 		createHeader();
 		createDrawer();
+	}
+	
+	private void initCookies(Map<String,Cookie> cooks) {
+		for(Cookie cookie:VaadinService.getCurrentRequest().getCookies()) {
+			cooks.put(cookie.getName(),cookie);
+		}
+		Cookie themeCookie=cooks.get(COOKIE_THEME);
+		if(themeCookie==null) {
+			themeCookie=new Cookie(COOKIE_THEME,THEME_LIGHT);
+			cooks.put(COOKIE_THEME, themeCookie);
+		}
+		initTheme(themeCookie);
+	}
+	
+	private void updateCookie(Cookie cookie) {
+		cookies.put(cookie.getName(), cookie);
+		// Make cookie expire in 2 minutes
+		cookie.setMaxAge(3600);
+
+		// Set the cookie path.
+		cookie.setPath(VaadinService.getCurrentRequest().getContextPath());
+
+		// Save cookie
+		VaadinService.getCurrentResponse().addCookie(cookie);
+	}
+	
+	private void initTheme(Cookie cookie) {
+		if(cookie.getValue().equals(THEME_DARK)) {
+			setDarkTheme(true);
+		}else if(cookie.getValue().equals(THEME_LIGHT)) {
+			setDarkTheme(false);
+		}else {
+			setDarkTheme(false);
+		}
 	}
 
 	private void createHeader() {
@@ -90,29 +143,35 @@ public class MainView extends AppLayout {
 	}
 
 	private VerticalLayout getThemeButton() {
-		VerticalLayout vert = new VerticalLayout();
-		HorizontalLayout hor=new HorizontalLayout();
-		ToggleButton tog = new ToggleButton();
-		Icon sun= new Icon(VaadinIcon.SUN_O);
-		Icon moon= new Icon(VaadinIcon.MOON_O);
 		vert.setHeight("80%");
 		vert.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
 		tog.setLabel("Change theme");
-		tog.addValueChangeListener(evt -> {
-			Page page = UI.getCurrent().getPage();
-			if (evt.getValue()) {
-				page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"dark\")");
-				hor.remove(moon);
-				hor.addComponentAsFirst(sun);
-			} else {
-				page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"light\")");
-				hor.remove(sun);
-				hor.addComponentAsFirst(moon);
-			}
-		});
-		hor.add(moon,tog);
+		tog.addValueChangeListener(evt -> setDarkTheme(evt.getValue()));
+		hor.add(tog);
 		vert.add(hor);
 		return vert;
+	}
+	
+	/**
+	 * Sets theme  for the page. True sets dark theme, False sets light theme.
+	 * @param b
+	 */
+	private void setDarkTheme(boolean b) {
+		Page page = UI.getCurrent().getPage();
+		Cookie themeCookie=cookies.get(COOKIE_THEME);
+		if (b) {
+			page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"dark\")");
+			hor.remove(moon);
+			hor.addComponentAsFirst(sun);
+			themeCookie.setValue(THEME_DARK);
+			tog.setValue(true);
+		} else {
+			page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"light\")");
+			hor.remove(sun);
+			hor.addComponentAsFirst(moon);
+			themeCookie.setValue(THEME_LIGHT);
+		}
+		updateCookie(themeCookie);
 	}
 
 }
