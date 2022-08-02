@@ -1,25 +1,24 @@
 package com.example.application.views.main;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.example.application.data.DopplerDecisionData;
+import com.example.application.data.Model;
+import com.example.application.views.components.DownloadLinksArea;
+import com.example.application.views.components.ModelTypePicker;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
@@ -27,39 +26,115 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
+import at.jku.cps.travart.ovm.model.impl.OvModel;
 import de.neominik.uvl.UVLParser;
+import de.neominik.uvl.ast.ParseError;
 import de.neominik.uvl.ast.UVLModel;
+import de.ovgu.featureide.fm.core.base.impl.FeatureModel;
 
-@Route(value="convert", layout= MainView.class)
+@Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
 public class ConvertView extends VerticalLayout {
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2306696766319627373L;
-	private static final int MAX_COL = 6;
 	private MemoryBuffer memoryBuffer = new MemoryBuffer();
 	private Upload singleFileUpload = new Upload(memoryBuffer);
 	private ProgressBar progressBar = new ProgressBar();
 	private Div progressBarLabel = new Div();
-	private VerticalLayout content;
-	private Workbook wb;
-	private List<DopplerDecisionData> decisions=new ArrayList<>();
+	private ModelTypePicker typePicker;
+	private HorizontalLayout horizontal;
+	private DownloadLinksArea downloads;
 	
+	private UVLModel uvlModel=null;
+	private OvModel ovmModel=null;
+	private FeatureModel fmModel=null;
 
 	public ConvertView() {
-		H2 title = new H2("Convert UVL model file");
-		Paragraph hint = new Paragraph("Only one .uvl or .txt file is allowed for upload.");
-		singleFileUpload.setAcceptedFileTypes(".uvl", ".txt", ".xls", ".xlsx",".csv");
+		H2 title = new H2("Convert model file");
+		StringBuilder sb = new StringBuilder();
+		sb.append("Please only upload allowed file formats: ");
+		for (String s : Model.getAllFileExtensions()) {
+			sb.append(s);
+			sb.append(" ");
+		}
+		Paragraph hint = new Paragraph(sb.toString());
+		add(title, hint);
+		horizontal = new HorizontalLayout();
+		horizontal.setWidthFull();
+		typePicker = new ModelTypePicker();
+		typePicker.setVisible(false);
+		downloads = new DownloadLinksArea(new File("./" + VaadinSession.getCurrent().getPushId()));
+		downloads.setVisible(false);
+		createUploader(Model.getAllFileExtensions());
+		horizontal.add(singleFileUpload, typePicker);
+		add(horizontal, downloads);
+		setMargin(false);
+	}
+
+	private Model detectModel(File file) {
+		Model m = null;
+		String extension = getExtensionByStringHandling(file.getName()).get();
+		String contents=null;
+		try {
+			contents = IOUtils.toString(new FileInputStream(file),StandardCharsets.UTF_8);
+		} catch (IOException e2) {
+			throwError("Problem reading uploaded file");
+		}
+		if (Arrays.asList(Model.UVL.extensions).stream().anyMatch(e -> e.equals(extension))) {
+			Object parseResult = UVLParser.parse(contents);
+			if (parseResult instanceof ParseError) {
+			} else {
+				uvlModel = (UVLModel) parseResult;
+				return Model.UVL;
+			}			
+		}
+		if (Arrays.asList(Model.DECISION.extensions).stream().anyMatch(e -> e.equals(extension))) {
+			
+		}
+		if (Arrays.asList(Model.FEATURE.extensions).stream().anyMatch(e -> e.equals(extension))) {
+
+		}
+		if (Arrays.asList(Model.OVM.extensions).stream().anyMatch(e -> e.equals(extension))) {
+
+		}
+		return m;
+	}
+
+	private File safeFile(InputStream fileData, String filename) {
+		String contents = null;
+		File f = null;
+		try {
+			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
+			File uploadFolder = new File("./" + VaadinSession.getCurrent().getPushId());
+			uploadFolder.mkdir();
+			uploadFolder.deleteOnExit();
+			f = new File(uploadFolder + "/upload/" + filename);
+			FileWriter fw = new FileWriter(f);
+			fw.write(contents);
+			fw.flush();
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return f;
+	}
+
+	private Optional<String> getExtensionByStringHandling(String filename) {
+		return Optional.ofNullable(filename).filter(f -> f.contains("."))
+				.map(f -> f.substring(filename.lastIndexOf(".") + 1));
+	}
+
+	private void createUploader(String... extensions) {
+		singleFileUpload.setAcceptedFileTypes(extensions);
 		singleFileUpload.addFileRejectedListener(event -> {
 			throwError("Please only upload allowed file formats.");
 		});
@@ -70,120 +145,43 @@ public class ConvertView extends VerticalLayout {
 			long contentLength = event.getContentLength();
 			String mimeType = event.getMIMEType();
 			addLoadingBar();
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			File file = safeFile(fileData, fileName);
+			Model modeltype = detectModel(file);
 			removeLoadingBar();
 			// Do something with the file data
-			if (fileName.endsWith(".uvl") || fileName.endsWith(".txt")) {
-				processFile(fileData, fileName, contentLength, mimeType);
-			} else if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")|| fileName.endsWith(".csv")) {
-				try {
-					handleExcelSheet(fileData);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			printSuccess();
+//			String contents = null;
+//			if (fileName.endsWith(".uvl") || fileName.endsWith(".txt")) {
+//				contents = processFile(fileData, fileName, contentLength, mimeType);
+//			} else if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx") || fileName.endsWith(".csv")) {
+//				add(new DecisionModelViewer(fileData));
+//			}
+			typePicker.setVisible(true);
+
 		});
-
-		setMargin(false);
-		add(title, hint, singleFileUpload);
-	}
-
-	private void handleExcelSheet(InputStream fileData) throws IOException {
-		wb = new XSSFWorkbook(fileData);
-
-		List<Tab> tabMap = new ArrayList<>();
-		for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-			Sheet curr = wb.getSheetAt(i);
-			for(int j=1;j<=curr.getLastRowNum();j++) {
-				Row r =curr.getRow(j);
-				DopplerDecisionData decision=new DopplerDecisionData();
-				for(int k=0;k<=MAX_COL;k++) {
-					try {
-					switch(k) {
-					case 0: decision.setId(r.getCell(k).getStringCellValue()); break;
-					case 1: decision.setQuestion(r.getCell(k).getStringCellValue());break;
-					case 2: decision.setType(r.getCell(k).getStringCellValue());break;
-					case 3: decision.setRange(r.getCell(k).getStringCellValue()); break;
-					case 4: decision.setCardinality(r.getCell(k).getStringCellValue()); break;
-					case 5: decision.setConstraint(r.getCell(k).getStringCellValue());break;
-					case 6: decision.setVisibility(r.getCell(k).getStringCellValue()); break;
-					}
-					}catch(NullPointerException e) {
-//						throwError("Error occured in Row " +j+" and Column "+k);
-					}
-				}
-				decisions.add(decision);
-			}
-			Tab currTab = new Tab(curr.getSheetName());
-			tabMap.add(currTab);
-		}
-
-		Tabs tabs = new Tabs();
-		for (Tab t : tabMap) {
-			tabs.add(t);
-		}
-		tabs.addSelectedChangeListener(event-> setContent(event.getSelectedTab()));
-		content = new VerticalLayout();
-		content.setSpacing(false);
-		setContent(tabs.getSelectedTab());
-		add(tabs,content);
-	}
-
-	private void setContent(Tab selectedTab) {
-		content.removeAll();
-		Grid<DopplerDecisionData> currGrid=new Grid<>(DopplerDecisionData.class,false);
-		currGrid.addColumn(DopplerDecisionData::getId).setHeader("ID");
-		currGrid.addColumn(DopplerDecisionData::getQuestion).setHeader("Question").setResizable(true);
-		currGrid.addColumn(DopplerDecisionData::getType).setHeader("Type");
-		currGrid.addColumn(DopplerDecisionData::getRange).setHeader("Range").setResizable(true);
-		currGrid.addColumn(DopplerDecisionData::getCardinality).setHeader("Cardinality");
-		currGrid.addColumn(DopplerDecisionData::getConstraint).setHeader("Constraint").setResizable(true);
-		currGrid.addColumn(DopplerDecisionData::getVisibility).setHeader("Visibility");
-		currGrid.setItems(decisions);
-		content.add(currGrid);
-		
-	}
-
-	private void printSuccess() {
-		H4 bonusHeader = new H4("Wow, what a great submission!");
-		add(bonusHeader);
 	}
 
 	private void removeLoadingBar() {
 		remove(progressBarLabel, progressBar);
-
 	}
 
-	void processFile(InputStream fileData, String fileName, long contentLength, String mimeType) {
-
-		String contents = null;
-		try {
-			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		UVLParser parser = new UVLParser();
-		try {
-			UVLModel model = (UVLModel) parser.parse(contents);
-			TextArea textArea = new TextArea();
-			textArea.setReadOnly(true);
-			textArea.setWidthFull();
-			textArea.setMaxHeight("600px");
-			textArea.setLabel("UVL Model");
-			textArea.setValue(model.toString());
-			add(textArea);
-		} catch (Throwable e) {
-			throwError("Could not successfully read UVL model");
-		}
-
-	}
+//	private String processFile(InputStream fileData, String fileName, long contentLength, String mimeType) {
+//
+//		String contents = null;
+//		
+//		Object parseResult = UVLParser.parse(contents);
+//		if (parseResult instanceof ParseError) {
+//			throwError("Error parsing UVL file occured.");
+//		} else {
+//			UVLModel model = (UVLModel) parseResult;
+//			TextArea textArea = new TextArea();
+//			textArea.setReadOnly(true);
+//			textArea.setWidthFull();
+//			textArea.setMaxHeight("600px");
+//			textArea.setLabel("UVL Model");
+//			textArea.setValue(model.toString());
+//		}
+//		return contents;
+//	}
 
 	void addLoadingBar() {
 		progressBar.setIndeterminate(true);
@@ -191,7 +189,7 @@ public class ConvertView extends VerticalLayout {
 		add(progressBarLabel, progressBar);
 	}
 
-	void throwError(String errorText) {
+	public static void throwError(String errorText) {
 		Notification notification = new Notification();
 		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
 
