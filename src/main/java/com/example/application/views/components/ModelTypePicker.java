@@ -6,8 +6,11 @@ import java.util.Collections;
 import java.util.List;
 
 import com.example.application.data.Model;
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.shared.Registration;
 
 public class ModelTypePicker extends Div{
 
@@ -28,8 +31,10 @@ public class ModelTypePicker extends Div{
 		items.removeIf(s->s.equals(leaveOut));
 		if(leaveOut != Model.NONE) items.removeIf(s-> s.equals(Model.NONE));
 		select.setItems(items);
+		select.setPlaceholder("Target approach");
 		select.setItemLabelGenerator(Model::getLabel);
 		add(select);
+		
 	}
 	
 	public List<Model> getItems(){
@@ -40,4 +45,9 @@ public class ModelTypePicker extends Div{
 		this.items=newItems;
 		select.setItems(newItems);
 	}
+	
+	public Registration addValueChangedListener(ValueChangeListener<? super ComponentValueChangeEvent<Select<Model>, Model>> listener) {
+		return select.addValueChangeListener(listener);
+	}
+	
 }

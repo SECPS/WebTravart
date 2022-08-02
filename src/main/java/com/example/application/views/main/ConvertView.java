@@ -91,8 +91,7 @@ public class ConvertView extends VerticalLayout {
 		}
 		if (Model.UVL.extensions.stream().anyMatch(e -> e.endsWith(extension))) {
 			Object parseResult = UVLParser.parse(contents);
-			if (parseResult instanceof ParseError) {
-			} else {
+			if (parseResult instanceof UVLModel) {
 				uvlModel = (UVLModel) parseResult;
 				showNotification("UVL Model detected",NotificationVariant.LUMO_SUCCESS);
 				return Model.UVL;
@@ -144,48 +143,26 @@ public class ConvertView extends VerticalLayout {
 			// Get information about the uploaded file
 			InputStream fileData = memoryBuffer.getInputStream();
 			String fileName = event.getFileName();
-			long contentLength = event.getContentLength();
-			String mimeType = event.getMIMEType();
 			addLoadingBar();
 			File file = safeFile(fileData, fileName);
 			Model modeltype = detectModel(file);
-			typePicker=new ModelTypePicker(modeltype);
-			horizontal.add(typePicker);
+			addTypePicker(modeltype);
 			removeLoadingBar();
-			// Do something with the file data
-//			String contents = null;
-//			if (fileName.endsWith(".uvl") || fileName.endsWith(".txt")) {
-//				contents = processFile(fileData, fileName, contentLength, mimeType);
-//			} else if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx") || fileName.endsWith(".csv")) {
-//				add(new DecisionModelViewer(fileData));
-//			}
-			typePicker.setVisible(true);
-
+			
 		});
+	}
+	
+	private void addTypePicker(Model modeltype) {
+		typePicker=new ModelTypePicker(modeltype);
+		horizontal.add(typePicker);
+		typePicker.setVisible(true);
+		//TODO continue here
+		typePicker.addValueChangedListener(event2->{});
 	}
 
 	private void removeLoadingBar() {
 		remove(progressBarLabel, progressBar);
 	}
-
-//	private String processFile(InputStream fileData, String fileName, long contentLength, String mimeType) {
-//
-//		String contents = null;
-//		
-//		Object parseResult = UVLParser.parse(contents);
-//		if (parseResult instanceof ParseError) {
-//			throwError("Error parsing UVL file occured.");
-//		} else {
-//			UVLModel model = (UVLModel) parseResult;
-//			TextArea textArea = new TextArea();
-//			textArea.setReadOnly(true);
-//			textArea.setWidthFull();
-//			textArea.setMaxHeight("600px");
-//			textArea.setLabel("UVL Model");
-//			textArea.setValue(model.toString());
-//		}
-//		return contents;
-//	}
 
 	void addLoadingBar() {
 		progressBar.setIndeterminate(true);
