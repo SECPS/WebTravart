@@ -231,8 +231,8 @@
     "lit": "$lit",
     "@vaadin/lit-renderer": "$@vaadin/lit-renderer",
     "chokidar": "$chokidar",
-    "line-awesome": "$line-awesome",
-    "@vaadin-component-factory/vcf-toggle-button": "$@vaadin-component-factory/vcf-toggle-button"
+    "@vaadin-component-factory/vcf-toggle-button": "$@vaadin-component-factory/vcf-toggle-button",
+    "line-awesome": "$line-awesome"
   },
   "vaadin": {
     "dependencies": {

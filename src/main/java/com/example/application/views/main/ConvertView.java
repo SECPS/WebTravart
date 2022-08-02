@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
@@ -22,6 +21,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -75,7 +75,7 @@ public class ConvertView extends VerticalLayout {
 		downloads = new DownloadLinksArea(new File("./" + VaadinSession.getCurrent().getPushId()));
 		downloads.setVisible(false);
 		createUploader(Model.getAllFileExtensions());
-		horizontal.add(singleFileUpload, typePicker);
+		horizontal.add(singleFileUpload);
 		add(horizontal, downloads);
 		setMargin(false);
 	}
@@ -87,25 +87,27 @@ public class ConvertView extends VerticalLayout {
 		try {
 			contents = IOUtils.toString(new FileInputStream(file),StandardCharsets.UTF_8);
 		} catch (IOException e2) {
-			throwError("Problem reading uploaded file");
+			showNotification("Problem reading uploaded file",NotificationVariant.LUMO_ERROR);
 		}
-		if (Arrays.asList(Model.UVL.extensions).stream().anyMatch(e -> e.equals(extension))) {
+		if (Model.UVL.extensions.stream().anyMatch(e -> e.endsWith(extension))) {
 			Object parseResult = UVLParser.parse(contents);
 			if (parseResult instanceof ParseError) {
 			} else {
 				uvlModel = (UVLModel) parseResult;
+				showNotification("UVL Model detected",NotificationVariant.LUMO_SUCCESS);
 				return Model.UVL;
 			}			
 		}
-		if (Arrays.asList(Model.DECISION.extensions).stream().anyMatch(e -> e.equals(extension))) {
-			
+		if (Model.DECISION.extensions.stream().anyMatch(e -> e.equals(extension))) {
+			showNotification("Decision Model detected",NotificationVariant.LUMO_SUCCESS);
 		}
-		if (Arrays.asList(Model.FEATURE.extensions).stream().anyMatch(e -> e.equals(extension))) {
-
+		if (Model.FEATURE.extensions.stream().anyMatch(e -> e.equals(extension))) {
+			showNotification("Feature Model detected",NotificationVariant.LUMO_SUCCESS);
 		}
-		if (Arrays.asList(Model.OVM.extensions).stream().anyMatch(e -> e.equals(extension))) {
-
+		if (Model.OVM.extensions.stream().anyMatch(e -> e.equals(extension))) {
+			showNotification("OVM Model detected",NotificationVariant.LUMO_SUCCESS);
 		}
+		showNotification("Model Type not detected",NotificationVariant.LUMO_ERROR);
 		return m;
 	}
 
@@ -114,10 +116,10 @@ public class ConvertView extends VerticalLayout {
 		File f = null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
-			File uploadFolder = new File("./" + VaadinSession.getCurrent().getPushId());
-			uploadFolder.mkdir();
+			File uploadFolder = new File("./upload/" + VaadinSession.getCurrent().getPushId());
+			uploadFolder.mkdirs();
 			uploadFolder.deleteOnExit();
-			f = new File(uploadFolder + "/upload/" + filename);
+			f = new File(uploadFolder + filename);
 			FileWriter fw = new FileWriter(f);
 			fw.write(contents);
 			fw.flush();
@@ -136,7 +138,7 @@ public class ConvertView extends VerticalLayout {
 	private void createUploader(String... extensions) {
 		singleFileUpload.setAcceptedFileTypes(extensions);
 		singleFileUpload.addFileRejectedListener(event -> {
-			throwError("Please only upload allowed file formats.");
+			showNotification("Please only upload allowed file formats.",NotificationVariant.LUMO_ERROR);
 		});
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
@@ -147,6 +149,8 @@ public class ConvertView extends VerticalLayout {
 			addLoadingBar();
 			File file = safeFile(fileData, fileName);
 			Model modeltype = detectModel(file);
+			typePicker=new ModelTypePicker(modeltype);
+			horizontal.add(typePicker);
 			removeLoadingBar();
 			// Do something with the file data
 //			String contents = null;
@@ -189,24 +193,24 @@ public class ConvertView extends VerticalLayout {
 		add(progressBarLabel, progressBar);
 	}
 
-	public static void throwError(String errorText) {
+	public static void showNotification(String errorText,NotificationVariant theme) {
 		Notification notification = new Notification();
-		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-
+		notification.addThemeVariants(theme);
+		notification.setPosition(Position.BOTTOM_CENTER);
+		notification.setDuration(5000);
 		Div text = new Div(new Text(errorText));
 
 		Button closeButton = new Button(new Icon("lumo", "cross"));
 		closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 		closeButton.getElement().setAttribute("aria-label", "Close");
-		closeButton.addClickListener(event2 -> {
-			notification.close();
-		});
+		closeButton.addClickListener(event2 -> 	notification.close());
 
 		HorizontalLayout layout = new HorizontalLayout(text, closeButton);
-		layout.setAlignItems(Alignment.CENTER);
+		layout.setAlignItems(Alignment.END);
 
 		notification.add(layout);
 		notification.open();
 	}
+	
 
 }

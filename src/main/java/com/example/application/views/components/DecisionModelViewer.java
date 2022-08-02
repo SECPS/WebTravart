@@ -13,6 +13,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.example.application.data.DopplerDecisionData;
 import com.example.application.views.main.ConvertView;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -31,7 +32,7 @@ public class DecisionModelViewer extends VerticalLayout {
 		try {
 			handleExcelSheet(fileData);
 		} catch (IOException e) {
-			ConvertView.throwError("Error processing file");
+			ConvertView.showNotification("Error processing file",NotificationVariant.LUMO_ERROR);
 			e.printStackTrace();
 		}
 	}
