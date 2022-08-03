@@ -2,19 +2,19 @@ package com.example.application.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public enum Model {
 	NONE(""),
 	DECISION("Decision Model",".txt",".csv",".xls",".xlsx"),
 	FEATURE("Feature Model",".csv"),
-	OVM("OVM Model", ".txt"),
+	OVM("OVM Model", ".txt",".xml"),
 	UVL("UVL Model",".uvl",".txt");
 	
-	private static final Map<Model,ArrayList<String>> FILE_EXTENSIONS = new HashMap<>();
+	private static final Map<Model,ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
 	
 	static {
 		for(Model m:values()) {
@@ -23,15 +23,19 @@ public enum Model {
 		}
 	}
 	
-	public final String label;
-	public final List<String> extensions;
+	private final String label;
+	private final List<String> extensions;
 	
 	private Model(String label, String... extensions) {
         this.label = label;
-        ArrayList<String> list= new ArrayList();
+        ArrayList<String> list= new ArrayList<>();
         list.addAll(Arrays.asList(extensions));
         this.extensions=list;
     }
+	
+	public static List<String> getExtensions(Model m){
+		return Collections.unmodifiableList(m.extensions);
+	}
 	
 	public static String getLabel(Model m) {
 		return m.label;

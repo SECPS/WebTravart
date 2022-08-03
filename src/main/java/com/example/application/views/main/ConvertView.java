@@ -32,10 +32,17 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import at.jku.cps.travart.ovm.model.impl.OvModel;
+import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
+import at.jku.cps.travart.core.io.FeatureModelReader;
+import at.jku.cps.travart.dopler.decision.IDecisionModel;
+import at.jku.cps.travart.dopler.io.DecisionModelReader;
+import at.jku.cps.travart.dopler.transformation.DecisionModeltoFeatureModelTransformer;
+import at.jku.cps.travart.ovm.io.OvModelReader;
+import at.jku.cps.travart.ovm.model.IOvModel;
+import at.jku.cps.travart.ovm.transformation.OvModelToFeatureModelTransformer;
 import de.neominik.uvl.UVLParser;
 import de.neominik.uvl.ast.UVLModel;
-import de.ovgu.featureide.fm.core.base.impl.FeatureModel;
+import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
 @Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
@@ -53,11 +60,10 @@ public class ConvertView extends VerticalLayout {
 	private DownloadLinksArea downloads;
 	private Button convertButton;
 	
-	private Model uploadedModelType;
-
-	private UVLModel uvlModel = null;
-	private OvModel ovmModel = null;
-	private FeatureModel fmModel = null;
+	private static final String READ_ERROR="Problem reading uploaded file";
+	
+	
+	private Object model=null;
 
 	public ConvertView() {
 		H2 title = new H2("Convert model file");
@@ -92,10 +98,28 @@ public class ConvertView extends VerticalLayout {
 		convertButton.setEnabled(false);
 		convertButton.setVisible(false);
 		convertButton.addClickListener(event->{
-			
+			//TODO convert here
 		});
 	}
 
+	private Object convertModelToTarget(Object model,Model targetModelType) throws NotSupportedVariablityTypeException {
+		IFeatureModel toConvert=null;
+		if(model instanceof IOvModel ovModel) {
+			OvModelToFeatureModelTransformer trans= new OvModelToFeatureModelTransformer();
+			toConvert=trans.transform(ovModel);
+		}else if(model instanceof IDecisionModel decModel) {
+			DecisionModeltoFeatureModelTransformer trans= new DecisionModeltoFeatureModelTransformer();
+			toConvert=trans.transform(decModel);
+		}else if(model instanceof UVLModel uvlModel) {
+			
+		}else if(model instanceof IFeatureModel) {
+			toConvert=(IFeatureModel)model;
+		}
+		
+		//TODO continue here
+		return null;
+	}
+	
 	private Model detectModel(File file) {
 		Model m = null;
 		Optional<String> ext=getExtensionByStringHandling(file.getName());
@@ -107,27 +131,80 @@ public class ConvertView extends VerticalLayout {
 		try {
 			contents = IOUtils.toString(new FileInputStream(file), StandardCharsets.UTF_8);
 		} catch (IOException e2) {
-			showNotification("Problem reading uploaded file", NotificationVariant.LUMO_ERROR);
+			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 		}
-		if (Model.UVL.extensions.stream().anyMatch(e -> e.endsWith(extension))) {
-			Object parseResult = UVLParser.parse(contents);
-			if (parseResult instanceof UVLModel parsedModel) {
-				this.uvlModel = parsedModel;
-				showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
-				return Model.UVL;
-			}
+		if (Model.getExtensions(Model.UVL).stream().anyMatch(e -> e.endsWith(extension))) {
+			return parseUVLModel(contents);
 		}
-		if (Model.DECISION.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
+		if (Model.getExtensions(Model.DECISION).stream().anyMatch(e -> e.equals(extension))) {
+			return parseDecisionModel(file);			
 		}
-		if (Model.FEATURE.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
+		if (Model.getExtensions(Model.FEATURE).stream().anyMatch(e -> e.equals(extension))) {
+			return parseFeatureModel(file);
 		}
-		if (Model.OVM.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
+		if(Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.equals(extension))) {
+			return parseOVMModel(file);
 		}
 		showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
 		return m;
+	}
+	
+	private Model parseFeatureModel(File file) {
+		FeatureModelReader fmr=new FeatureModelReader();
+		try {
+			model=fmr.read(file.toPath());
+			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
+			return Model.FEATURE;
+		} catch (IOException e) {
+			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
+			e.printStackTrace();
+		} catch (NotSupportedVariablityTypeException e) {
+			showNotification("There was an unsupported variability type in the feature model", NotificationVariant.LUMO_ERROR);
+			e.printStackTrace();
+		}
+		return Model.NONE;
+	}
+	
+	private Model parseDecisionModel(File file) {
+		DecisionModelReader dmr= new DecisionModelReader();
+		try {
+			model=dmr.read(file.toPath());
+			showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
+			return Model.DECISION;
+		} catch (IOException e) {
+			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
+			e.printStackTrace();
+		} catch (NotSupportedVariablityTypeException e) {
+			showNotification("There was an unsupported variability type in the decision model", NotificationVariant.LUMO_ERROR);
+			e.printStackTrace();
+		}
+		return Model.NONE;
+	}
+	
+	private Model parseUVLModel(String contents) {
+		Object parseResult = UVLParser.parse(contents);
+		if (parseResult instanceof UVLModel parsedModel) {
+			model = parsedModel;
+			showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
+			return Model.UVL;
+		}
+		return Model.NONE;
+	}
+	
+	private Model parseOVMModel(File f) {
+		OvModelReader ovReader=new OvModelReader();
+		try {
+			model= ovReader.read(f.toPath());
+			showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
+			return Model.OVM;
+		} catch (IOException e1) {
+			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
+			e1.printStackTrace();
+		} catch (NotSupportedVariablityTypeException e1) {
+			showNotification("There was an unsupported variability type in the OVM model", NotificationVariant.LUMO_ERROR);
+			e1.printStackTrace();
+		}
+		return Model.NONE;
 	}
 
 	private File safeFile(InputStream fileData, String filename) {
@@ -167,7 +244,6 @@ public class ConvertView extends VerticalLayout {
 			File file = safeFile(fileData, fileName);
 			Model modeltype = detectModel(file);
 			addTypePicker(modeltype);
-			uploadedModelType=modeltype;
 			removeLoadingBar();
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e->{
