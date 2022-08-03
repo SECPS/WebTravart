@@ -45,7 +45,7 @@ public class MainView extends AppLayout {
 	
 	private static final long serialVersionUID = 4920006999153529869L;
 	private Tabs tabs;
-	Map<String,Cookie> cookies=new HashMap<>(); 
+	private Map<String,Cookie> cookies=new HashMap<>(); 
 
 	MainView() {		
 		initCookies(cookies);
@@ -57,12 +57,8 @@ public class MainView extends AppLayout {
 		for(Cookie cookie:VaadinService.getCurrentRequest().getCookies()) {
 			cooks.put(cookie.getName(),cookie);
 		}
-		Cookie themeCookie=cooks.get(COOKIE_THEME);
-		if(themeCookie==null) {
-			themeCookie=new Cookie(COOKIE_THEME,THEME_LIGHT);
-			cooks.put(COOKIE_THEME, themeCookie);
-		}
-		initTheme(themeCookie);
+		cooks.putIfAbsent(COOKIE_THEME, new Cookie(COOKIE_THEME,THEME_LIGHT));
+		initTheme(cooks.get(COOKIE_THEME));
 	}
 	
 	private void updateCookie(Cookie cookie) {
@@ -78,13 +74,7 @@ public class MainView extends AppLayout {
 	}
 	
 	private void initTheme(Cookie cookie) {
-		if(cookie.getValue().equals(THEME_DARK)) {
-			setDarkTheme(true);
-		}else if(cookie.getValue().equals(THEME_LIGHT)) {
-			setDarkTheme(false);
-		}else {
-			setDarkTheme(false);
-		}
+		setDarkTheme(cookie.getValue().equals(THEME_DARK));
 	}
 
 	private void createHeader() {

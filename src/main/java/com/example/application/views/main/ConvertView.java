@@ -28,8 +28,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -139,8 +137,9 @@ public class ConvertView extends VerticalLayout {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
 			File uploadFolder = new File("./upload/" + VaadinSession.getCurrent().getPushId());
 			uploadFolder.mkdirs();
-			uploadFolder.deleteOnExit();
-			f = new File(uploadFolder + filename);
+			uploadFolder.deleteOnExit();			
+			f = new File(uploadFolder, filename);
+			f.deleteOnExit();
 			try (FileWriter fw = new FileWriter(f)) {
 				fw.write(contents);
 				fw.flush();
@@ -171,12 +170,9 @@ public class ConvertView extends VerticalLayout {
 			uploadedModelType=modeltype;
 			removeLoadingBar();
 		});
-		singleFileUpload.getElement().addEventListener("file-remove", new DomEventListener() {
-		    @Override
-		     public void handleEvent(DomEvent event) {
-		    	typePicker.setEnabled(false);
-		    	convertButton.setEnabled(false);
-		     }
+		singleFileUpload.getElement().addEventListener("file-remove", e->{
+			typePicker.setEnabled(false);
+	    	convertButton.setEnabled(false);			
 		});  
 	}
 
