@@ -13,7 +13,6 @@ import org.apache.commons.io.IOUtils;
 import com.example.application.data.Model;
 import com.example.application.views.components.DownloadLinksArea;
 import com.example.application.views.components.ModelTypePicker;
-import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -29,8 +28,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -39,7 +38,6 @@ import at.jku.cps.travart.ovm.model.impl.OvModel;
 import de.neominik.uvl.UVLParser;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.impl.FeatureModel;
-import elemental.json.JsonObject;
 
 @Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")

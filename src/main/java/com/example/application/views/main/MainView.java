@@ -37,9 +37,12 @@ public class MainView extends AppLayout {
 	private ToggleButton tog = new ToggleButton();
 	private Icon sun= new Icon(VaadinIcon.SUN_O);
 	private Icon moon= new Icon(VaadinIcon.MOON_O);
+	
 	private static final String COOKIE_THEME= "theme";
 	private static final String THEME_DARK="dark";
 	private static final String THEME_LIGHT="light";
+	private static final int COOKIE_MAX_AGE=Integer.MAX_VALUE;
+	
 	private static final long serialVersionUID = 4920006999153529869L;
 	private Tabs tabs;
 	Map<String,Cookie> cookies=new HashMap<>(); 
@@ -65,7 +68,7 @@ public class MainView extends AppLayout {
 	private void updateCookie(Cookie cookie) {
 		cookies.put(cookie.getName(), cookie);
 		// Make cookie expire in 2 minutes
-		cookie.setMaxAge(3600);
+		cookie.setMaxAge(COOKIE_MAX_AGE);
 
 		// Set the cookie path.
 		cookie.setPath(VaadinService.getCurrentRequest().getContextPath());
