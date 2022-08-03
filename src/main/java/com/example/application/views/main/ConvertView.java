@@ -117,7 +117,7 @@ public class ConvertView extends VerticalLayout {
 		}
 		
 		//TODO continue here
-		return null;
+		return toConvert;
 	}
 	
 	private Model detectModel(File file) {
