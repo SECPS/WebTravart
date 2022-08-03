@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import com.example.application.data.Model;
 import com.example.application.views.components.DownloadLinksArea;
 import com.example.application.views.components.ModelTypePicker;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -28,15 +29,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import at.jku.cps.travart.ovm.model.impl.OvModel;
 import de.neominik.uvl.UVLParser;
-import de.neominik.uvl.ast.ParseError;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.impl.FeatureModel;
+import elemental.json.JsonObject;
 
 @Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
@@ -51,12 +54,14 @@ public class ConvertView extends VerticalLayout {
 	private ProgressBar progressBar = new ProgressBar();
 	private Div progressBarLabel = new Div();
 	private ModelTypePicker typePicker;
-	private HorizontalLayout horizontal;
 	private DownloadLinksArea downloads;
+	private Button convertButton;
 	
-	private UVLModel uvlModel=null;
-	private OvModel ovmModel=null;
-	private FeatureModel fmModel=null;
+	private Model uploadedModelType;
+
+	private UVLModel uvlModel = null;
+	private OvModel ovmModel = null;
+	private FeatureModel fmModel = null;
 
 	public ConvertView() {
 		H2 title = new H2("Convert model file");
@@ -68,45 +73,64 @@ public class ConvertView extends VerticalLayout {
 		}
 		Paragraph hint = new Paragraph(sb.toString());
 		add(title, hint);
-		horizontal = new HorizontalLayout();
-		horizontal.setWidthFull();
-		typePicker = new ModelTypePicker();
-		typePicker.setVisible(false);
+		initTypePicker();
 		downloads = new DownloadLinksArea(new File("./" + VaadinSession.getCurrent().getPushId()));
 		downloads.setVisible(false);
 		createUploader(Model.getAllFileExtensions());
-		horizontal.add(singleFileUpload);
-		add(horizontal, downloads);
+		initConvertButton();
+		add(singleFileUpload,typePicker,convertButton,downloads);
 		setMargin(false);
+	}
+	
+	private void initTypePicker() {
+		typePicker = new ModelTypePicker();
+		typePicker.setVisible(false);
+		typePicker.addValueChangedListener(event ->{
+			if(event.getValue()!=null)
+				convertButton.setEnabled(true);
+		});
+	}
+	
+	private void initConvertButton() {
+		convertButton= new Button("Convert");
+		convertButton.setEnabled(false);
+		convertButton.setVisible(false);
+		convertButton.addClickListener(event->{
+			
+		});
 	}
 
 	private Model detectModel(File file) {
 		Model m = null;
-		String extension = getExtensionByStringHandling(file.getName()).get();
-		String contents=null;
+		Optional<String> ext=getExtensionByStringHandling(file.getName());
+		if(!ext.isPresent()) {
+			return Model.NONE;
+		}
+		String extension = ext.get();
+		String contents = null;
 		try {
-			contents = IOUtils.toString(new FileInputStream(file),StandardCharsets.UTF_8);
+			contents = IOUtils.toString(new FileInputStream(file), StandardCharsets.UTF_8);
 		} catch (IOException e2) {
-			showNotification("Problem reading uploaded file",NotificationVariant.LUMO_ERROR);
+			showNotification("Problem reading uploaded file", NotificationVariant.LUMO_ERROR);
 		}
 		if (Model.UVL.extensions.stream().anyMatch(e -> e.endsWith(extension))) {
 			Object parseResult = UVLParser.parse(contents);
-			if (parseResult instanceof UVLModel) {
-				uvlModel = (UVLModel) parseResult;
-				showNotification("UVL Model detected",NotificationVariant.LUMO_SUCCESS);
+			if (parseResult instanceof UVLModel parsedModel) {
+				this.uvlModel = parsedModel;
+				showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
 				return Model.UVL;
-			}			
+			}
 		}
 		if (Model.DECISION.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("Decision Model detected",NotificationVariant.LUMO_SUCCESS);
+			showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
 		}
 		if (Model.FEATURE.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("Feature Model detected",NotificationVariant.LUMO_SUCCESS);
+			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
 		}
 		if (Model.OVM.extensions.stream().anyMatch(e -> e.equals(extension))) {
-			showNotification("OVM Model detected",NotificationVariant.LUMO_SUCCESS);
+			showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
 		}
-		showNotification("Model Type not detected",NotificationVariant.LUMO_ERROR);
+		showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
 		return m;
 	}
 
@@ -119,10 +143,10 @@ public class ConvertView extends VerticalLayout {
 			uploadFolder.mkdirs();
 			uploadFolder.deleteOnExit();
 			f = new File(uploadFolder + filename);
-			FileWriter fw = new FileWriter(f);
-			fw.write(contents);
-			fw.flush();
-			fw.close();
+			try (FileWriter fw = new FileWriter(f)) {
+				fw.write(contents);
+				fw.flush();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -136,9 +160,8 @@ public class ConvertView extends VerticalLayout {
 
 	private void createUploader(String... extensions) {
 		singleFileUpload.setAcceptedFileTypes(extensions);
-		singleFileUpload.addFileRejectedListener(event -> {
-			showNotification("Please only upload allowed file formats.",NotificationVariant.LUMO_ERROR);
-		});
+		singleFileUpload.addFileRejectedListener(
+				event -> showNotification("Please only upload allowed file formats.", NotificationVariant.LUMO_ERROR));
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
 			InputStream fileData = memoryBuffer.getInputStream();
@@ -147,17 +170,23 @@ public class ConvertView extends VerticalLayout {
 			File file = safeFile(fileData, fileName);
 			Model modeltype = detectModel(file);
 			addTypePicker(modeltype);
+			uploadedModelType=modeltype;
 			removeLoadingBar();
-			
 		});
+		singleFileUpload.getElement().addEventListener("file-remove", new DomEventListener() {
+		    @Override
+		     public void handleEvent(DomEvent event) {
+		    	typePicker.setEnabled(false);
+		    	convertButton.setEnabled(false);
+		     }
+		});  
 	}
-	
-	private void addTypePicker(Model modeltype) {
-		typePicker=new ModelTypePicker(modeltype);
-		horizontal.add(typePicker);
+
+	private void addTypePicker(Model modelType) {
+		typePicker.setItemsForSourceModel(modelType);
 		typePicker.setVisible(true);
-		//TODO continue here
-		typePicker.addValueChangedListener(event2->{});
+		typePicker.setEnabled(true);
+		convertButton.setVisible(true);
 	}
 
 	private void removeLoadingBar() {
@@ -170,7 +199,7 @@ public class ConvertView extends VerticalLayout {
 		add(progressBarLabel, progressBar);
 	}
 
-	public static void showNotification(String errorText,NotificationVariant theme) {
+	public static void showNotification(String errorText, NotificationVariant theme) {
 		Notification notification = new Notification();
 		notification.addThemeVariants(theme);
 		notification.setPosition(Position.BOTTOM_CENTER);
@@ -180,7 +209,7 @@ public class ConvertView extends VerticalLayout {
 		Button closeButton = new Button(new Icon("lumo", "cross"));
 		closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
 		closeButton.getElement().setAttribute("aria-label", "Close");
-		closeButton.addClickListener(event2 -> 	notification.close());
+		closeButton.addClickListener(event2 -> notification.close());
 
 		HorizontalLayout layout = new HorizontalLayout(text, closeButton);
 		layout.setAlignItems(Alignment.END);
@@ -188,6 +217,5 @@ public class ConvertView extends VerticalLayout {
 		notification.add(layout);
 		notification.open();
 	}
-	
 
 }

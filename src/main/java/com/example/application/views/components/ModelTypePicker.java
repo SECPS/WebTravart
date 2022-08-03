@@ -26,8 +26,8 @@ public class ModelTypePicker extends Div{
 	}
 	
 	public ModelTypePicker(Model leaveOut) {
-		items.addAll(Arrays.asList(Model.values()));
 		select.setLabel("Convert to");
+		items.addAll(Arrays.asList(Model.values()));
 		items.removeIf(s->s.equals(leaveOut));
 		if(leaveOut != Model.NONE) items.removeIf(s-> s.equals(Model.NONE));
 		select.setItems(items);
@@ -39,6 +39,13 @@ public class ModelTypePicker extends Div{
 	
 	public List<Model> getItems(){
 		return Collections.unmodifiableList(items);
+	}
+	
+	public void setItemsForSourceModel(Model source) {
+		items.clear();
+		items.addAll(Arrays.asList(Model.values()));
+		items.removeIf(s->s.equals(source)||s.equals(Model.NONE));
+		select.setItems(items);
 	}
 	
 	public void setItems(List<Model> newItems) {
