@@ -8,6 +8,7 @@ import java.util.List;
 import com.example.application.data.Model;
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
+import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.shared.Registration;
@@ -20,19 +21,30 @@ public class ModelTypePicker extends Div{
 	private static final long serialVersionUID = 4834182718882462946L;
 	private List<Model> items=new ArrayList<>();
 	private Select<Model> select=new Select<>();
+	private final static String ROUNDTRIP=" (roundtrip)";
+	private Model chosenModel=Model.NONE;
 
 	public ModelTypePicker () {
 		this(Model.NONE);
 	}
 	
-	public ModelTypePicker(Model leaveOut) {
+	public ModelTypePicker(Model source) {
+		chosenModel=source;
 		select.setLabel("Convert to");
 		items.addAll(Arrays.asList(Model.values()));
-		items.removeIf(s->s.equals(leaveOut));
-		if(leaveOut != Model.NONE) items.removeIf(s-> s.equals(Model.NONE));
+		if(chosenModel != Model.NONE) items.removeIf(s-> s.equals(Model.NONE));
 		select.setItems(items);
 		select.setPlaceholder("Target approach");
-		select.setItemLabelGenerator(Model::getLabel);
+		select.setItemLabelGenerator(new ItemLabelGenerator<Model>() {
+			private static final long serialVersionUID = -217514886549138284L;
+			@Override
+			public String apply(Model item) {
+					String lab=Model.getLabel(item);
+					if( item!=Model.FEATURE && lab.equals(Model.getLabel(chosenModel))) {
+						lab+=ROUNDTRIP;
+					}
+				return lab;
+			}});
 		add(select);
 		
 	}
@@ -42,9 +54,10 @@ public class ModelTypePicker extends Div{
 	}
 	
 	public void setItemsForSourceModel(Model source) {
+		chosenModel=source;
 		items.clear();
 		items.addAll(Arrays.asList(Model.values()));
-		items.removeIf(s->s.equals(source)||s.equals(Model.NONE));
+		items.removeIf(s->s.equals(Model.NONE));
 		select.setItems(items);
 	}
 	
@@ -55,6 +68,10 @@ public class ModelTypePicker extends Div{
 	
 	public Registration addValueChangedListener(ValueChangeListener<? super ComponentValueChangeEvent<Select<Model>, Model>> listener) {
 		return select.addValueChangeListener(listener);
+	}
+	
+	public Model getSelection() {
+		return select.getValue();
 	}
 	
 }

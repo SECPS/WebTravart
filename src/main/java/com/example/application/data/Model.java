@@ -10,8 +10,9 @@ import java.util.Map;
 public enum Model {
 	NONE(""),
 	DECISION("Decision Model",".txt",".csv",".xls",".xlsx"),
-	FEATURE("Feature Model",".csv"),
-	OVM("OVM Model", ".txt",".xml"),
+	FEATURE("Feature Model",".xml",".csv"),
+	OVM("OVM Model", ".ovm",".txt",".xml"),
+	PPRDSL("PPR DSL Model", ".txt",".csv"),
 	UVL("UVL Model",".uvl",".txt");
 	
 	private static final Map<Model,ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
