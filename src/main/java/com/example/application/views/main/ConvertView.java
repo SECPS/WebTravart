@@ -69,6 +69,7 @@ public class ConvertView extends VerticalLayout {
 	private DownloadLinksArea downloads;
 	private Button convertButton;
 	private String fileName;
+	private Div progressBarSubLabel = new Div();
 
 	private static final String READ_ERROR = "Problem reading uploaded file";
 	private static final String VAR_ERROR = "There was an unsupported variability type in the model";
@@ -131,36 +132,38 @@ public class ConvertView extends VerticalLayout {
 	private Path convertPivotToTarget(Path targetPath) throws IOException, NotSupportedVariablityTypeException {
 		IFeatureModel pivotModel = convertModelToPivot(model);
 		File targetFile = null;
+		int extensionLength= getExtensionByStringHandling(fileName).get().length()+1;
+		String newFileName=fileName.substring(0, fileName.length()-extensionLength);
 		switch (typePicker.getSelection()) {
 		case FEATURE:
 			FeatureModelXMLWriter featWriter = new FeatureModelXMLWriter();
-			targetFile = new File(targetPath.toString(), fileName + ".xml");
+			targetFile = new File(targetPath.toString(), newFileName + ".xml");
 			featWriter.write(pivotModel, targetFile.toPath());
 			break;
 //		case UVL: break; TODO
 		case OVM:
 			FeatureModeltoOvModelTransformer ovnmTransformer = new FeatureModeltoOvModelTransformer();
 			OvModelWriter ovmWriter = new OvModelWriter();
-			targetFile = new File(targetPath.toString(), fileName + Model.getExtensions(Model.OVM).get(0));
+			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.OVM).get(0));
 			ovmWriter.write(ovnmTransformer.transform(pivotModel), targetFile.toPath());
 			break;
 		case PPRDSL:
 			FeatureModelToPprDslTransformer pprTransformer = new FeatureModelToPprDslTransformer();
 			PprDslWriter pprWriter = new PprDslWriter();
-			targetFile = new File(targetPath.toString(), fileName + Model.getExtensions(Model.PPRDSL).get(0));
+			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.PPRDSL).get(0));
 			pprWriter.write(pprTransformer.transform(pivotModel), targetFile.toPath());
 			break;
 		case DECISION:
 			FeatureModeltoDecisionModelTransformer decisionTransformer = new FeatureModeltoDecisionModelTransformer();
 			DecisionModelWriter decisionWriter = new DecisionModelWriter();
-			targetFile = new File(targetPath.toString(), fileName + Model.getExtensions(Model.DECISION).get(0));
+			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.DECISION).get(0));
 			decisionWriter.write(decisionTransformer.transform(pivotModel), targetFile.toPath());
 			break;
 		default:
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
 			break;
 		}
-		return targetFile.toPath();
+		return targetFile ==null? null:targetFile.toPath(); 
 	}
 
 	private IFeatureModel convertModelToPivot(Object model) {
@@ -342,13 +345,15 @@ public class ConvertView extends VerticalLayout {
 	}
 
 	private void removeLoadingBar() {
-		remove(progressBarLabel, progressBar);
+		remove(progressBarLabel, progressBar,progressBarSubLabel);
 	}
 
 	void addLoadingBar(String text) {
 		progressBar.setIndeterminate(true);
 		progressBarLabel.setText(text);
-		add(progressBarLabel, progressBar);
+		progressBarSubLabel.getStyle().set("font-size", "var(--lumo-font-size-xs)");
+		progressBarSubLabel.setText("Process can take a couple seconds for bigger models");
+		add(progressBarLabel, progressBar,progressBarSubLabel);
 	}
 
 	public static void showNotification(String errorText, NotificationVariant theme) {
