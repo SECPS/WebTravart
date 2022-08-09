@@ -1,52 +1,55 @@
 package com.example.application.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
 public enum Model {
-	NONE(""),
-	DECISION("Decision Model",".txt",".csv",".xls",".xlsx"),
-	FEATURE("Feature Model",".xml",".csv"),
-	OVM("OVM Model", ".ovm",".txt",".xml"),
-	PPRDSL("PPR DSL Model", ".txt",".csv"),
-	UVL("UVL Model",".uvl",".txt");
-	
-	private static final Map<Model,ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
-	
+	NONE("", "", ""), DECISION("Decision Model", "Decisions", "Rules", ".txt", ".csv", ".xls", ".xlsx"),
+	FEATURE("Feature Model", "Features", "Constraints", ".xml", ".csv"),
+	OVM("OVM Model", "VP & V", "Constraints", ".ovm", ".txt", ".xml"), PPRDSL("PPR DSL Model", "", "", ".txt", ".csv"),
+	UVL("UVL Model", "Features", "Constraints", ".uvl", ".txt");
+
+	private static final Map<Model, ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
+
 	static {
-		for(Model m:values()) {
-			ArrayList<String> list=new ArrayList<>();
+		for (Model m : values()) {
+			ArrayList<String> list = new ArrayList<>();
 			FILE_EXTENSIONS.put(m, list);
 		}
 	}
-	
+
 	private final String label;
+	public final String varPointName;
+	public final String constraintName;
+
 	private final List<String> extensions;
-	
-	private Model(String label, String... extensions) {
-        this.label = label;
-        ArrayList<String> list= new ArrayList<>();
-        list.addAll(Arrays.asList(extensions));
-        this.extensions=list;
-    }
-	
-	public static List<String> getExtensions(Model m){
+
+	private Model(String label, String varName, String constName, String... extensions) {
+		this.label = label;
+		this.varPointName = varName;
+		this.constraintName = constName;
+		ArrayList<String> list = new ArrayList<>();
+		list.addAll(Arrays.asList(extensions));
+		this.extensions = list;
+	}
+
+	public static List<String> getExtensions(Model m) {
 		return Collections.unmodifiableList(m.extensions);
 	}
-	
+
 	public static String getLabel(Model m) {
 		return m.label;
 	}
-	
+
 	public static String[] getAllFileExtensions() {
-		List<String> l=new ArrayList<>();
-		for(Model m:values()) {
+		List<String> l = new ArrayList<>();
+		for (Model m : values()) {
 			l.addAll(m.extensions);
 		}
-		return  l.stream().distinct().toList().toArray(size-> new String[size]);
+		return l.stream().distinct().toList().toArray(size -> new String[size]);
 	}
 }

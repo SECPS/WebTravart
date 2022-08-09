@@ -73,6 +73,7 @@ public class ConvertView extends VerticalLayout {
 
 	private static final String READ_ERROR = "Problem reading uploaded file";
 	private static final String VAR_ERROR = "There was an unsupported variability type in the model";
+	private final String UPLOAD_FOLDER="./upload/"+VaadinSession.getCurrent().getPushId();
 
 	private transient Object model = null;
 
@@ -87,7 +88,7 @@ public class ConvertView extends VerticalLayout {
 		Paragraph hint = new Paragraph(sb.toString());
 		add(title, hint);
 		initTypePicker();
-		File downloadLinks = new File("./upload/"+VaadinSession.getCurrent().getPushId(), "convert");
+		File downloadLinks = new File(UPLOAD_FOLDER, "convert");
 		downloadLinks.mkdirs();
 		downloads = new DownloadLinksArea(downloadLinks);
 		downloads.setAlignItems(Alignment.START);
@@ -113,7 +114,7 @@ public class ConvertView extends VerticalLayout {
 		convertButton.setVisible(false);
 		convertButton.addClickListener(event -> {
 			addLoadingBar("Converting model...");
-			Path targetPath = new File("./upload/"+VaadinSession.getCurrent().getPushId(), "convert").toPath();
+			Path targetPath = new File(UPLOAD_FOLDER, "convert").toPath();
 			try {
 				targetPath = convertPivotToTarget(targetPath);
 			} catch (IOException e) {
@@ -297,7 +298,7 @@ public class ConvertView extends VerticalLayout {
 		File f = null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
-			File uploadFolder = new File("./upload/" + VaadinSession.getCurrent().getPushId());
+			File uploadFolder = new File(UPLOAD_FOLDER);
 			uploadFolder.mkdirs();
 			uploadFolder.deleteOnExit();
 			f = new File(uploadFolder, filename);

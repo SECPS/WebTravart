@@ -1,7 +1,7 @@
 package com.example.application.views.components;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class ModelTypePicker extends Div{
 	private static final long serialVersionUID = 4834182718882462946L;
 	private List<Model> items=new ArrayList<>();
 	private Select<Model> select=new Select<>();
-	private final static String ROUNDTRIP=" (roundtrip)";
+	private static final String ROUNDTRIP=" (roundtrip)";
 	private Model chosenModel=Model.NONE;
 
 	public ModelTypePicker () {
