@@ -88,7 +88,7 @@ public class MainView extends AppLayout {
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 		header.setWidth("100%");
 		header.addClassNames("py-0", "px-m");
-
+		setDrawerOpened(false);
 		addToNavbar(header);
 
 	}
@@ -99,6 +99,7 @@ public class MainView extends AppLayout {
 		tabs.add(createTab(VaadinIcon.HOME, "Home"), createTab(CustomIcon.LOGO, "Converter"),
 				createTab(VaadinIcon.SCALE, "Impressum"));
 		tabs.setOrientation(Tabs.Orientation.VERTICAL);
+		tabs.addSelectedChangeListener(e->setDrawerOpened(false));
 		return tabs;
 	}
 
