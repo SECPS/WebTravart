@@ -12,8 +12,13 @@ import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 
 import com.example.application.data.Model;
+import com.example.application.data.RQuality;
+import com.example.application.data.Tuple;
 import com.example.application.views.components.DownloadLinksArea;
+import com.example.application.views.components.InformationLossGrid;
 import com.example.application.views.components.ModelTypePicker;
+import com.example.application.views.data.RoundTripMetrics;
+import com.example.application.views.data.TransformationData;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -70,6 +75,9 @@ public class ConvertView extends VerticalLayout {
 	private Button convertButton;
 	private String fileName;
 	private Div progressBarSubLabel = new Div();
+	private HorizontalLayout horizontal= new HorizontalLayout();
+	private VerticalLayout transformationLayout=new VerticalLayout();
+	private InformationLossGrid infLossGrid= new InformationLossGrid();
 
 	private static final String READ_ERROR = "Problem reading uploaded file";
 	private static final String VAR_ERROR = "There was an unsupported variability type in the model";
@@ -86,7 +94,7 @@ public class ConvertView extends VerticalLayout {
 			sb.append(" ");
 		}
 		Paragraph hint = new Paragraph(sb.toString());
-		add(title, hint);
+		add(title, hint,horizontal);
 		initTypePicker();
 		File downloadLinks = new File(UPLOAD_FOLDER, "convert");
 		downloadLinks.mkdirs();
@@ -95,7 +103,10 @@ public class ConvertView extends VerticalLayout {
 		downloads.setVisible(false);
 		createUploader(Model.getAllFileExtensions());
 		initConvertButton();
-		add(singleFileUpload, typePicker, convertButton, downloads);
+		transformationLayout.add(singleFileUpload, typePicker, convertButton, downloads);
+		transformationLayout.setWidth("28%");
+		horizontal.setWidth("100%");
+		horizontal.add(transformationLayout,infLossGrid);
 		setMargin(false);
 	}
 
@@ -125,6 +136,10 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 			}
 			removeLoadingBar();
+			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 1",Model.DECISION,Model.OVM,2342,34,232,545,null));
+			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 2",Model.DECISION,Model.OVM,2235,5,68,54225,null));
+			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.DECISION), new TransformationData("Transformation 3",Model.DECISION,Model.DECISION,2342,34,232,545,new RoundTripMetrics(20,30,5,RQuality.LOSS)));
+			infLossGrid.addTransformation(new Tuple<>(Model.OVM,Model.UVL), new TransformationData("Transformation 4",Model.OVM,Model.UVL,2342,34,232,545,null));
 			downloads.refreshFileLinks();
 			downloads.setVisible(true);
 		});
