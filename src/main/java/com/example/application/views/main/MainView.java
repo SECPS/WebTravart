@@ -88,7 +88,6 @@ public class MainView extends AppLayout {
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 		header.setWidth("100%");
 		header.addClassNames("py-0", "px-m");
-		setDrawerOpened(false);
 		addToNavbar(header);
 
 	}

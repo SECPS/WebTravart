@@ -98,4 +98,38 @@ public class TransformationData {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o==null) {
+			return false;
+		}
+		if(!(o instanceof TransformationData)) {
+			return false;
+		}
+		if(hashCode()==o.hashCode()) {
+			return true;
+		}
+		TransformationData other=(TransformationData)o;
+		if(!name.equals(other.name)) return false;
+//		if(!rtMetrics.equals(other.rtMetrics)) return false;
+		if(sourceConstCount!=other.sourceConstCount)return false;
+		if(sourceVarCount!=other.sourceVarCount)return false;
+		if(targetConstCount!=other.targetConstCount)return false;
+		if(targetVarCount!=other.targetVarCount)return false;
+		if(!transformType.equals(other.transformType))return false;
+		return true;		
+	}
+	
+	@Override
+	public int hashCode() {
+		int hash=7;
+		hash=31*hash+name.hashCode();
+		hash=31*hash+sourceConstCount;
+		hash=31*hash+sourceVarCount;
+		hash=31*hash+targetConstCount;
+		hash=31*hash+targetVarCount;
+		hash=31*hash+transformType.hashCode();
+		return hash;
+	}
 }
