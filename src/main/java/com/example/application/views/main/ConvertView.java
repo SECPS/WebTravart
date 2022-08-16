@@ -137,7 +137,6 @@ public class ConvertView extends VerticalLayout {
 			}
 			removeLoadingBar();
 			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 1",Model.DECISION,Model.OVM,2342,34,232,545,null));
-			//TODO check why transformation 2 seems not to show up here.
 			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 2",Model.DECISION,Model.OVM,2235,5,68,54225,null));
 			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.DECISION), new TransformationData("Transformation 3",Model.DECISION,Model.DECISION,2342,34,232,545,new RoundTripMetrics(20,30,5,RQuality.LOSS)));
 			infLossGrid.addTransformation(new Tuple<>(Model.OVM,Model.UVL), new TransformationData("Transformation 4",Model.OVM,Model.UVL,2342,34,232,545,null));

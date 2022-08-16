@@ -1,5 +1,6 @@
 package com.example.application;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
@@ -21,6 +22,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @Theme(themeClass = Lumo.class, variant = Lumo.LIGHT)
 @PWA(name = "Travart Online", shortName = "Travart Online", offlineResources = {})
 @NpmPackage(value = "line-awesome", version = "1.3.0")
+@CssImport(value="./styles/global.css", themeFor="vaadin-grid-sorter")
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
 
     /**
