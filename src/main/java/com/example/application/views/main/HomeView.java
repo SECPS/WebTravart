@@ -12,7 +12,6 @@ import com.vaadin.flow.router.RouteAlias;
 @Route(value="home", layout=MainView.class)
 @PageTitle("Travart Online | Home")
 
-@RouteAlias(value= "",layout=MainView.class)
 public class HomeView extends VerticalLayout {
 	
 	/**

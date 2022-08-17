@@ -10,6 +10,8 @@ import com.vaadin.componentfactory.ToggleButton;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
@@ -17,6 +19,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.IconFactory;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Page;
@@ -33,10 +36,10 @@ public class MainView extends AppLayout {
 	 * 
 	 */
 	private VerticalLayout vert = new VerticalLayout();
-	private HorizontalLayout hor=new HorizontalLayout();
-	private ToggleButton tog = new ToggleButton();
+	private Button tog = new Button();
 	private Icon sun= new Icon(VaadinIcon.SUN_O);
 	private Icon moon= new Icon(VaadinIcon.MOON_O);
+	private boolean darkMode;
 	
 	private static final String COOKIE_THEME= "theme";
 	private static final String THEME_DARK="dark";
@@ -44,13 +47,14 @@ public class MainView extends AppLayout {
 	private static final int COOKIE_MAX_AGE=Integer.MAX_VALUE;
 	
 	private static final long serialVersionUID = 4920006999153529869L;
-	private Tabs tabs;
 	private Map<String,Cookie> cookies=new HashMap<>(); 
 
 	MainView() {		
 		initCookies(cookies);
 		createHeader();
-		createDrawer();
+		
+		sun.setSize("30px");
+		moon.setSize("30px");
 	}
 	
 	private void initCookies(Map<String,Cookie> cooks) {
@@ -74,93 +78,52 @@ public class MainView extends AppLayout {
 	}
 	
 	private void initTheme(Cookie cookie) {
-		setDarkTheme(cookie.getValue().equals(THEME_DARK));
+		darkMode=cookie.getValue().equals(THEME_DARK);
+		setDarkTheme(darkMode);
 	}
 
 	private void createHeader() {
 		Icon image = CustomIcon.LOGO.create();
-
+		image.setSize("60px");
 		H1 banner = new H1("Travart Online");
-		banner.getStyle().set("font-size", "var(--lumo-font-size-l)").set("margin", "0");
-
-		HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), image, banner);
-
+		banner.getStyle().set("font-size", "var(--lumo-font-size-xxl)").set("margin", "0");
+		banner.setWidth("30%");
+		HorizontalLayout header = new HorizontalLayout(/*new DrawerToggle(),*/ image, banner,getThemeButton());
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+		
 		header.setWidth("100%");
-		header.addClassNames("py-0", "px-m");
+		header.addClassNames("py-0", "px-m","ml-l","mt-0","mb-0","mr-l");
+		header.setMargin(true);
 		addToNavbar(header);
-
-	}
-
-	private Tabs getTabs() {
-		if (tabs == null)
-			tabs = new Tabs();
-		tabs.add(createTab(VaadinIcon.HOME, "Home"), createTab(CustomIcon.LOGO, "Converter"),
-				createTab(VaadinIcon.SCALE, "Impressum"));
-		tabs.setOrientation(Tabs.Orientation.VERTICAL);
-		tabs.addSelectedChangeListener(e->setDrawerOpened(false));
-		return tabs;
-	}
-
-	private Tab createTab(IconFactory viewIcon, String viewName) {
-		Icon icon = viewIcon.create();
-		icon.getStyle().set("box-sizing", "border-box").set("margin-inline-end", "var(--lumo-space-m)")
-				.set("margin-inline-start", "var(--lumo-space-xs)").set("padding", "var(--lumo-space-xs)");
-		Class<? extends VerticalLayout> c = null;
-		switch (viewName) {
-		case "Home":
-			c = HomeView.class;
-			break;
-		case "Converter":
-			c = ConvertView.class;
-			break;
-		case "Impressum":
-			c = ImpressumView.class;
-			break;
-		default:
-			c = HomeView.class;
-		}
-		RouterLink link = new RouterLink("", c);
-		link.add(icon, new Span(viewName));
-		link.setTabIndex(0);
-
-		return new Tab(link);
-	}
-
-	private void createDrawer() {
-		addToDrawer(getTabs());
-		addToDrawer(getThemeButton());
 	}
 
 	private VerticalLayout getThemeButton() {
-		vert.setHeight("80%");
-		vert.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-		tog.setLabel("Change theme");
-		tog.addValueChangeListener(evt -> setDarkTheme(evt.getValue()));
-		hor.add(tog);
-		vert.add(hor);
+		tog.addThemeVariants(ButtonVariant.LUMO_ICON,ButtonVariant.LUMO_TERTIARY_INLINE);
+		tog.addClickListener(evt -> setDarkTheme(darkMode));
+		vert.setAlignItems(Alignment.END);
+		vert.add(tog);
+		vert.setMargin(false);
 		return vert;
 	}
 	
 	/**
 	 * Sets theme  for the page. True sets dark theme, False sets light theme.
+	 * @param darkMode2 
 	 * @param b
 	 */
-	private void setDarkTheme(boolean b) {
+	private void setDarkTheme(boolean dark) {
 		Page page = UI.getCurrent().getPage();
 		Cookie themeCookie=cookies.get(COOKIE_THEME);
-		if (b) {
+		if (dark) {
 			page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"dark\")");
-			hor.remove(moon);
-			hor.addComponentAsFirst(sun);
 			themeCookie.setValue(THEME_DARK);
-			tog.setValue(true);
+			tog.setIcon(sun);
 		} else {
 			page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"light\")");
-			hor.remove(sun);
-			hor.addComponentAsFirst(moon);
 			themeCookie.setValue(THEME_LIGHT);
+			tog.setIcon(moon);
 		}
+		darkMode=!darkMode;
 		updateCookie(themeCookie);
 	}
 

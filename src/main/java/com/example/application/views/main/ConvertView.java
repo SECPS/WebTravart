@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.example.application.data.Model;
@@ -22,9 +23,12 @@ import com.example.application.views.data.TransformationData;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -36,6 +40,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.VaadinSession;
 
 import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
@@ -60,6 +65,8 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
 @Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
+
+@RouteAlias(value= "",layout=MainView.class)
 public class ConvertView extends VerticalLayout {
 
 	/**
@@ -95,6 +102,7 @@ public class ConvertView extends VerticalLayout {
 		}
 		Paragraph hint = new Paragraph(sb.toString());
 		add(title, hint,horizontal);
+		addAndExpand(createFooter());
 		initTypePicker();
 		File downloadLinks = new File(UPLOAD_FOLDER, "convert");
 		downloadLinks.mkdirs();
@@ -108,6 +116,37 @@ public class ConvertView extends VerticalLayout {
 		horizontal.setWidth("100%");
 		horizontal.add(transformationLayout,infLossGrid);
 		setMargin(false);
+	}
+
+	private VerticalLayout createFooter() {
+		VerticalLayout base=new VerticalLayout();
+		HorizontalLayout hor=new HorizontalLayout();
+		VerticalLayout vert1=new VerticalLayout();
+		VerticalLayout vert2=new VerticalLayout();
+		hor.setJustifyContentMode(JustifyContentMode.EVENLY);
+		vert1.setSpacing(false);
+		hor.add(vert1,vert2);
+		hor.setVerticalComponentAlignment(Alignment.END);
+		Span name=new Span("Johannes Kepler Universität Linz - LIT CPS Lab");
+		Span street= new Span("Altenbergerstraße 69");
+		Span plz= new Span("4040 Linz, Österreich");
+		Anchor mail=new Anchor("mailto:secps@jku.at","secps@jku.at");
+
+		VerticalLayout content=new VerticalLayout(name,street,plz,mail);
+		content.setSpacing(false);
+		content.setPadding(false);
+		vert2.add(content);
+		content.setJustifyContentMode(JustifyContentMode.END);
+		
+		Anchor cpsLink= new Anchor("https://www.jku.at/lit-cyber-physical-systems-lab/","Cyber-Physical Systems Lab ");
+		Anchor gitHubLink= new Anchor("https://github.com/SECPS/TraVarT","GitHub");
+		
+		vert1.add(cpsLink,gitHubLink);
+		
+		base.add(hor);
+		base.setAlignItems(Alignment.END);
+		base.setJustifyContentMode(JustifyContentMode.END);
+		return base;
 	}
 
 	private void initTypePicker() {
@@ -212,8 +251,8 @@ public class ConvertView extends VerticalLayout {
 		}
 		String extension = ext.get();
 		String contents = null;
-		try {
-			contents = IOUtils.toString(new FileInputStream(file), StandardCharsets.UTF_8);
+		try (FileInputStream fileStream=new FileInputStream(file)){
+			contents = IOUtils.toString(fileStream, StandardCharsets.UTF_8);
 		} catch (IOException e2) {
 			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 		}
@@ -310,14 +349,19 @@ public class ConvertView extends VerticalLayout {
 
 	private File safeFile(InputStream fileData, String filename) {
 		String contents = null;
-		File f = null;
+		File f=null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
 			File uploadFolder = new File(UPLOAD_FOLDER);
 			uploadFolder.mkdirs();
-			uploadFolder.deleteOnExit();
 			f = new File(uploadFolder, filename);
-			f.deleteOnExit();
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				try {
+					FileUtils.forceDelete(uploadFolder);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}));
 			try (FileWriter fw = new FileWriter(f)) {
 				fw.write(contents);
 				fw.flush();
@@ -339,12 +383,17 @@ public class ConvertView extends VerticalLayout {
 				event -> showNotification("Please only upload allowed file formats.", NotificationVariant.LUMO_ERROR));
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
-			InputStream fileData = memoryBuffer.getInputStream();
+			try(InputStream fileData = memoryBuffer.getInputStream()){
 			fileName = event.getFileName();
 			addLoadingBar("Uploading...");
 			File file = safeFile(fileData, fileName);
+			file.deleteOnExit();
 			Model modeltype = detectModel(file);
 			addTypePicker(modeltype);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			removeLoadingBar();
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
