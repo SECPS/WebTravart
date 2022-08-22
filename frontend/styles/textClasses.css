@@ -24,3 +24,7 @@
  }
  
 .vaadin-grid-sorter[path="col2"] div { min-height:80px; }
+
+.footer{
+	background:var(--lumo-base-color) linear-gradient(var(--lumo-contrast-5pct), var(--lumo-contrast-5pct));
+}

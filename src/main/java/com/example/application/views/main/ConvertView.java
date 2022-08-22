@@ -23,7 +23,6 @@ import com.example.application.views.data.TransformationData;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -100,9 +99,16 @@ public class ConvertView extends VerticalLayout {
 			sb.append(s);
 			sb.append(" ");
 		}
+		setHeight("100%");
 		Paragraph hint = new Paragraph(sb.toString());
-		add(title, hint,horizontal);
-		addAndExpand(createFooter());
+		VerticalLayout content= new VerticalLayout();
+		content.add(title,hint);
+		add(content,horizontal);
+		setPadding(false);
+		VerticalLayout footer=createFooter();
+		footer.setHeight("136px");
+		add(footer);
+		setJustifyContentMode(JustifyContentMode.BETWEEN);
 		initTypePicker();
 		File downloadLinks = new File(UPLOAD_FOLDER, "convert");
 		downloadLinks.mkdirs();
@@ -123,16 +129,17 @@ public class ConvertView extends VerticalLayout {
 		HorizontalLayout hor=new HorizontalLayout();
 		VerticalLayout vert1=new VerticalLayout();
 		VerticalLayout vert2=new VerticalLayout();
-		hor.setJustifyContentMode(JustifyContentMode.EVENLY);
+		hor.setPadding(false);
+		base.setPadding(false);
 		vert1.setSpacing(false);
 		hor.add(vert1,vert2);
-		hor.setVerticalComponentAlignment(Alignment.END);
 		Span name=new Span("Johannes Kepler Universität Linz - LIT CPS Lab");
 		Span street= new Span("Altenbergerstraße 69");
 		Span plz= new Span("4040 Linz, Österreich");
 		Anchor mail=new Anchor("mailto:secps@jku.at","secps@jku.at");
 
 		VerticalLayout content=new VerticalLayout(name,street,plz,mail);
+		content.setWidth("350px");
 		content.setSpacing(false);
 		content.setPadding(false);
 		vert2.add(content);
@@ -146,6 +153,7 @@ public class ConvertView extends VerticalLayout {
 		base.add(hor);
 		base.setAlignItems(Alignment.END);
 		base.setJustifyContentMode(JustifyContentMode.END);
+		base.addClassName("footer");
 		return base;
 	}
 
