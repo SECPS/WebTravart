@@ -13,12 +13,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.example.application.data.Model;
-import com.example.application.data.RQuality;
 import com.example.application.data.Tuple;
 import com.example.application.views.components.DownloadLinksArea;
 import com.example.application.views.components.InformationLossGrid;
 import com.example.application.views.components.ModelTypePicker;
-import com.example.application.views.data.RoundTripMetrics;
 import com.example.application.views.data.TransformationData;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -45,6 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
 import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
 import at.jku.cps.travart.core.io.FeatureModelReader;
 import at.jku.cps.travart.core.io.FeatureModelXMLWriter;
+import at.jku.cps.travart.dopler.common.DecisionModelUtils;
 import at.jku.cps.travart.dopler.decision.IDecisionModel;
 import at.jku.cps.travart.dopler.io.DecisionModelReader;
 import at.jku.cps.travart.dopler.io.DecisionModelWriter;
@@ -55,9 +54,12 @@ import at.jku.cps.travart.ovm.io.OvModelWriter;
 import at.jku.cps.travart.ovm.model.IOvModel;
 import at.jku.cps.travart.ovm.transformation.FeatureModeltoOvModelTransformer;
 import at.jku.cps.travart.ovm.transformation.OvModelToFeatureModelTransformer;
+import at.jku.cps.travart.ppr.dsl.common.PprDslUtils;
 import at.jku.cps.travart.ppr.dsl.io.PprDslReader;
 import at.jku.cps.travart.ppr.dsl.io.PprDslWriter;
 import at.jku.cps.travart.ppr.dsl.transformation.FeatureModelToPprDslTransformer;
+import at.jku.cps.travart.ppr.dsl.transformation.PprDslToFeatureModelTransformer;
+import at.sqi.ppr.model.AssemblySequence;
 import de.neominik.uvl.UVLParser;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
@@ -65,7 +67,7 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 @Route(value = "convert", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
 
-@RouteAlias(value= "",layout=MainView.class)
+@RouteAlias(value = "", layout = MainView.class)
 public class ConvertView extends VerticalLayout {
 
 	/**
@@ -81,13 +83,13 @@ public class ConvertView extends VerticalLayout {
 	private Button convertButton;
 	private String fileName;
 	private Div progressBarSubLabel = new Div();
-	private HorizontalLayout horizontal= new HorizontalLayout();
-	private VerticalLayout transformationLayout=new VerticalLayout();
-	private InformationLossGrid infLossGrid= new InformationLossGrid();
+	private HorizontalLayout horizontal = new HorizontalLayout();
+	private VerticalLayout transformationLayout = new VerticalLayout();
+	private InformationLossGrid infLossGrid = new InformationLossGrid();
 
 	private static final String READ_ERROR = "Problem reading uploaded file";
 	private static final String VAR_ERROR = "There was an unsupported variability type in the model";
-	private final String UPLOAD_FOLDER="./upload/"+VaadinSession.getCurrent().getPushId();
+	private final String UPLOAD_FOLDER = "./upload/" + VaadinSession.getCurrent().getPushId();
 
 	private transient Object model = null;
 
@@ -101,11 +103,11 @@ public class ConvertView extends VerticalLayout {
 		}
 		setHeight("100%");
 		Paragraph hint = new Paragraph(sb.toString());
-		VerticalLayout content= new VerticalLayout();
-		content.add(title,hint);
-		add(content,horizontal);
+		VerticalLayout content = new VerticalLayout();
+		content.add(title, hint);
+		add(content, horizontal);
 		setPadding(false);
-		VerticalLayout footer=createFooter();
+		VerticalLayout footer = createFooter();
 		footer.setHeight("136px");
 		add(footer);
 		setJustifyContentMode(JustifyContentMode.BETWEEN);
@@ -120,36 +122,37 @@ public class ConvertView extends VerticalLayout {
 		transformationLayout.add(singleFileUpload, typePicker, convertButton, downloads);
 		transformationLayout.setWidth("28%");
 		horizontal.setWidth("100%");
-		horizontal.add(transformationLayout,infLossGrid);
+		horizontal.add(transformationLayout, infLossGrid);
 		setMargin(false);
 	}
 
 	private VerticalLayout createFooter() {
-		VerticalLayout base=new VerticalLayout();
-		HorizontalLayout hor=new HorizontalLayout();
-		VerticalLayout vert1=new VerticalLayout();
-		VerticalLayout vert2=new VerticalLayout();
+		VerticalLayout base = new VerticalLayout();
+		HorizontalLayout hor = new HorizontalLayout();
+		VerticalLayout vert1 = new VerticalLayout();
+		VerticalLayout vert2 = new VerticalLayout();
 		hor.setPadding(false);
 		base.setPadding(false);
 		vert1.setSpacing(false);
-		hor.add(vert1,vert2);
-		Span name=new Span("Johannes Kepler Universität Linz - LIT CPS Lab");
-		Span street= new Span("Altenbergerstraße 69");
-		Span plz= new Span("4040 Linz, Österreich");
-		Anchor mail=new Anchor("mailto:secps@jku.at","secps@jku.at");
+		hor.add(vert1, vert2);
+		Span name = new Span("Johannes Kepler Universität Linz - LIT CPS Lab");
+		Span street = new Span("Altenbergerstraße 69");
+		Span plz = new Span("4040 Linz, Österreich");
+		Anchor mail = new Anchor("mailto:secps@jku.at", "secps@jku.at");
 
-		VerticalLayout content=new VerticalLayout(name,street,plz,mail);
+		VerticalLayout content = new VerticalLayout(name, street, plz, mail);
 		content.setWidth("350px");
 		content.setSpacing(false);
 		content.setPadding(false);
 		vert2.add(content);
 		content.setJustifyContentMode(JustifyContentMode.END);
-		
-		Anchor cpsLink= new Anchor("https://www.jku.at/lit-cyber-physical-systems-lab/","Cyber-Physical Systems Lab ");
-		Anchor gitHubLink= new Anchor("https://github.com/SECPS/TraVarT","GitHub");
-		
-		vert1.add(cpsLink,gitHubLink);
-		
+
+		Anchor cpsLink = new Anchor("https://www.jku.at/en/lit-cyber-physical-systems-lab/",
+				"Cyber-Physical Systems Lab ");
+		Anchor gitHubLink = new Anchor("https://github.com/SECPS/TraVarT", "GitHub");
+
+		vert1.add(cpsLink, gitHubLink);
+
 		base.add(hor);
 		base.setAlignItems(Alignment.END);
 		base.setJustifyContentMode(JustifyContentMode.END);
@@ -173,8 +176,11 @@ public class ConvertView extends VerticalLayout {
 		convertButton.addClickListener(event -> {
 			addLoadingBar("Converting model...");
 			Path targetPath = new File(UPLOAD_FOLDER, "convert").toPath();
+			TransformationData transformation = new TransformationData();
+			transformation.setName(fileName);
+			setSourceMetrics(transformation);
 			try {
-				targetPath = convertPivotToTarget(targetPath);
+				targetPath = convertPivotToTarget(targetPath, transformation);
 			} catch (IOException e) {
 				showNotification("Error happened accessing target file.", NotificationVariant.LUMO_ERROR);
 				e.printStackTrace();
@@ -183,50 +189,83 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 			}
 			removeLoadingBar();
-			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 1",Model.DECISION,Model.OVM,2342,34,232,545,null));
-			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.OVM), new TransformationData("Transformation 2",Model.DECISION,Model.OVM,2235,5,68,54225,null));
-			infLossGrid.addTransformation(new Tuple<>(Model.DECISION,Model.DECISION), new TransformationData("Transformation 3",Model.DECISION,Model.DECISION,2342,34,232,545,new RoundTripMetrics(20,30,5,RQuality.LOSS)));
-			infLossGrid.addTransformation(new Tuple<>(Model.OVM,Model.UVL), new TransformationData("Transformation 4",Model.OVM,Model.UVL,2342,34,232,545,null));
+			infLossGrid.addTransformation(transformation);
 			downloads.refreshFileLinks();
 			downloads.setVisible(true);
 		});
 	}
 
-	private Path convertPivotToTarget(Path targetPath) throws IOException, NotSupportedVariablityTypeException {
+	private void setSourceMetrics(TransformationData data) {
+		if (model instanceof IOvModel ovModel) {
+			data.setSourceConstCount(ovModel.getConstraintCount());
+			data.setSourceVarCount(ovModel.getNumberOfVariationPoints());
+			data.setTransformType(new Tuple<>(Model.OVM,typePicker.getSelection()));
+		} else if (model instanceof IDecisionModel decModel) {
+			data.setSourceConstCount( DecisionModelUtils.countRules(decModel));
+			data.setSourceVarCount(DecisionModelUtils.getNumberOfDecisions(decModel));
+			data.setTransformType(new Tuple<>(Model.DECISION,typePicker.getSelection()));
+		} else if (model instanceof UVLModel uvlModel) {
+			// TODO integrate UVL
+			showNotification("UVL currently not supported", NotificationVariant.LUMO_CONTRAST);
+		} else if (model instanceof IFeatureModel featModel) {
+			data.setSourceConstCount(featModel.getConstraintCount());
+			data.setSourceVarCount(featModel.getNumberOfFeatures());
+			data.setTransformType(new Tuple<>(Model.FEATURE,typePicker.getSelection()));
+		} else if (model instanceof AssemblySequence pprModel) {
+			data.setSourceConstCount(PprDslUtils.getNumberOfConstraints(pprModel));
+			data.setSourceVarCount(PprDslUtils.getNumberOfProducts(pprModel));
+			data.setTransformType(new Tuple<>(Model.PPRDSL,typePicker.getSelection()));
+		}
+	}
+
+	private Path convertPivotToTarget(Path targetPath, TransformationData transformation)
+			throws IOException, NotSupportedVariablityTypeException {
 		IFeatureModel pivotModel = convertModelToPivot(model);
 		File targetFile = null;
-		int extensionLength= getExtensionByStringHandling(fileName).get().length()+1;
-		String newFileName=fileName.substring(0, fileName.length()-extensionLength);
+		int extensionLength = getExtensionByStringHandling(fileName).get().length() + 1;
+		String newFileName = fileName.substring(0, fileName.length() - extensionLength);
 		switch (typePicker.getSelection()) {
 		case FEATURE:
 			FeatureModelXMLWriter featWriter = new FeatureModelXMLWriter();
+			transformation.setTargetConstCount(pivotModel.getConstraintCount());
+			transformation.setTargetVarCount(pivotModel.getNumberOfFeatures());
 			targetFile = new File(targetPath.toString(), newFileName + ".xml");
 			featWriter.write(pivotModel, targetFile.toPath());
 			break;
-//		case UVL: break; TODO
+		case UVL: 
+			showNotification("UVL currently not supported", NotificationVariant.LUMO_ERROR);
+			break; //TODO
 		case OVM:
 			FeatureModeltoOvModelTransformer ovnmTransformer = new FeatureModeltoOvModelTransformer();
 			OvModelWriter ovmWriter = new OvModelWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.OVM).get(0));
-			ovmWriter.write(ovnmTransformer.transform(pivotModel), targetFile.toPath());
+			IOvModel ovTargetModel=ovnmTransformer.transform(pivotModel);
+			transformation.setTargetConstCount(ovTargetModel.getConstraintCount());
+			transformation.setTargetVarCount(ovTargetModel.getNumberOfVariationPoints());
+			ovmWriter.write(ovTargetModel, targetFile.toPath());
 			break;
 		case PPRDSL:
 			FeatureModelToPprDslTransformer pprTransformer = new FeatureModelToPprDslTransformer();
 			PprDslWriter pprWriter = new PprDslWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.PPRDSL).get(0));
-			pprWriter.write(pprTransformer.transform(pivotModel), targetFile.toPath());
+			AssemblySequence pprTargetModel=pprTransformer.transform(pivotModel);
+			transformation.setTargetConstCount(PprDslUtils.getNumberOfConstraints(pprTargetModel));
+			transformation.setTargetVarCount(PprDslUtils.getNumberOfProducts(pprTargetModel));
+			pprWriter.write(pprTargetModel, targetFile.toPath());
 			break;
 		case DECISION:
 			FeatureModeltoDecisionModelTransformer decisionTransformer = new FeatureModeltoDecisionModelTransformer();
 			DecisionModelWriter decisionWriter = new DecisionModelWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.DECISION).get(0));
-			decisionWriter.write(decisionTransformer.transform(pivotModel), targetFile.toPath());
+			IDecisionModel decTargetModel= decisionTransformer.transform(pivotModel);
+			transformation.setTargetConstCount(DecisionModelUtils.countRules(decTargetModel));
+			transformation.setTargetVarCount(DecisionModelUtils.getNumberOfDecisions(decTargetModel));
+			decisionWriter.write(decTargetModel, targetFile.toPath());
 			break;
 		default:
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
-			break;
 		}
-		return targetFile ==null? null:targetFile.toPath(); 
+		return targetFile == null ? null : targetFile.toPath();
 	}
 
 	private IFeatureModel convertModelToPivot(Object model) {
@@ -243,6 +282,9 @@ public class ConvertView extends VerticalLayout {
 				showNotification("UVL currently not supported", NotificationVariant.LUMO_CONTRAST);
 			} else if (model instanceof IFeatureModel featModel) {
 				toConvert = featModel;
+			} else if (model instanceof AssemblySequence pprModel) {
+				PprDslToFeatureModelTransformer trans = new PprDslToFeatureModelTransformer();
+				toConvert = trans.transform(pprModel);
 			}
 		} catch (NotSupportedVariablityTypeException e) {
 			showNotification("Travart encountered an unsupported variability type during transformation",
@@ -259,7 +301,7 @@ public class ConvertView extends VerticalLayout {
 		}
 		String extension = ext.get();
 		String contents = null;
-		try (FileInputStream fileStream=new FileInputStream(file)){
+		try (FileInputStream fileStream = new FileInputStream(file)) {
 			contents = IOUtils.toString(fileStream, StandardCharsets.UTF_8);
 		} catch (IOException e2) {
 			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
@@ -279,7 +321,8 @@ public class ConvertView extends VerticalLayout {
 		if (m == Model.NONE && Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.endsWith(extension))) {
 			m = parseOVMModel(file);
 		}
-		if(m==Model.NONE)showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
+		if (m == Model.NONE)
+			showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
 		return m;
 	}
 
@@ -357,7 +400,7 @@ public class ConvertView extends VerticalLayout {
 
 	private File safeFile(InputStream fileData, String filename) {
 		String contents = null;
-		File f=null;
+		File f = null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
 			File uploadFolder = new File(UPLOAD_FOLDER);
@@ -391,13 +434,13 @@ public class ConvertView extends VerticalLayout {
 				event -> showNotification("Please only upload allowed file formats.", NotificationVariant.LUMO_ERROR));
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
-			try(InputStream fileData = memoryBuffer.getInputStream()){
-			fileName = event.getFileName();
-			addLoadingBar("Uploading...");
-			File file = safeFile(fileData, fileName);
-			file.deleteOnExit();
-			Model modeltype = detectModel(file);
-			addTypePicker(modeltype);
+			try (InputStream fileData = memoryBuffer.getInputStream()) {
+				fileName = event.getFileName();
+				addLoadingBar("Uploading...");
+				File file = safeFile(fileData, fileName);
+				file.deleteOnExit();
+				Model modeltype = detectModel(file);
+				addTypePicker(modeltype);
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -418,7 +461,7 @@ public class ConvertView extends VerticalLayout {
 	}
 
 	private void removeLoadingBar() {
-		remove(progressBarLabel, progressBar,progressBarSubLabel);
+		remove(progressBarLabel, progressBar, progressBarSubLabel);
 	}
 
 	void addLoadingBar(String text) {
@@ -426,7 +469,7 @@ public class ConvertView extends VerticalLayout {
 		progressBarLabel.setText(text);
 		progressBarSubLabel.getStyle().set("font-size", "var(--lumo-font-size-xs)");
 		progressBarSubLabel.setText("Process can take a couple seconds for bigger models");
-		add(progressBarLabel, progressBar,progressBarSubLabel);
+		add(progressBarLabel, progressBar, progressBarSubLabel);
 	}
 
 	public static void showNotification(String errorText, NotificationVariant theme) {

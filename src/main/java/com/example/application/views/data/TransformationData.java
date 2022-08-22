@@ -6,10 +6,10 @@ import com.example.application.data.Tuple;
 public class TransformationData {
 	private String name;
 	private Tuple<Model, Model> transformType;
-	private int sourceVarCount;
-	private int targetVarCount;
-	private int sourceConstCount;
-	private int targetConstCount;
+	private long sourceVarCount;
+	private long targetVarCount;
+	private long sourceConstCount;
+	private long targetConstCount;
 	private RoundTripMetrics rtMetrics = null;
 
 	public RoundTripMetrics getRtMetrics() {
@@ -20,8 +20,8 @@ public class TransformationData {
 		this.rtMetrics = rtMetrics;
 	}
 
-	public TransformationData(String name, Model source, Model target, int sourceVarCount, int sourceConstCount,
-			int targetVarCount, int targetConstCount, RoundTripMetrics rtm) {
+	public TransformationData(String name, Model source, Model target, long sourceVarCount, long sourceConstCount,
+			long targetVarCount, long targetConstCount, RoundTripMetrics rtm) {
 		this.name = name;
 		this.rtMetrics = rtm;
 		this.sourceVarCount = sourceVarCount;
@@ -30,12 +30,21 @@ public class TransformationData {
 		this.targetConstCount = targetConstCount;
 		transformType = new Tuple<>(source, target);
 	}
+	
+	public TransformationData(String name, Model source, Model target, long sourceVarCount, long sourceConstCount,
+			long targetVarCount, long targetConstCount) {
+		this(name,source,target,sourceVarCount,sourceConstCount,targetVarCount,targetConstCount,null);
+	}
 
-	public void setSourceVarCount(int count) {
+	public TransformationData() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public void setSourceVarCount(long count) {
 		sourceVarCount = count;
 	}
 
-	public void setSourceConstCount(int count) {
+	public void setSourceConstCount(long count) {
 		sourceConstCount = count;
 	}
 
@@ -43,19 +52,19 @@ public class TransformationData {
 		return rtMetrics != null;
 	}
 
-	public int getSourceVarCount() {
+	public long getSourceVarCount() {
 		return sourceVarCount;
 	}
 
-	public int getTargetVarCount() {
+	public long getTargetVarCount() {
 		return targetVarCount;
 	}
 
-	public int getSourceConstCount() {
+	public long getSourceConstCount() {
 		return sourceConstCount;
 	}
 
-	public int getTargetConstCount() {
+	public long getTargetConstCount() {
 		return targetConstCount;
 	}
 
@@ -63,11 +72,11 @@ public class TransformationData {
 		this.transformType = transformType;
 	}
 
-	public void setTargetVarCount(int count) {
+	public void setTargetVarCount(long count) {
 		targetVarCount = count;
 	}
 
-	public void setTargetConstCount(int count) {
+	public void setTargetConstCount(long count) {
 		targetConstCount = count;
 	}
 
@@ -123,13 +132,13 @@ public class TransformationData {
 	
 	@Override
 	public int hashCode() {
-		int hash=7;
+		long hash=7;
 		hash=31*hash+name.hashCode();
 		hash=31*hash+sourceConstCount;
 		hash=31*hash+sourceVarCount;
 		hash=31*hash+targetConstCount;
 		hash=31*hash+targetVarCount;
 		hash=31*hash+transformType.hashCode();
-		return hash;
+		return (int)hash;
 	}
 }
