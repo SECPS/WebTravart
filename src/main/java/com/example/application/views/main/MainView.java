@@ -42,7 +42,7 @@ public class MainView extends AppLayout {
 	private static final long serialVersionUID = 4920006999153529869L;
 	private Map<String,Cookie> cookies=new HashMap<>(); 
 
-	MainView() {		
+	MainView() {
 		initCookies(cookies);
 		createHeader();
 		

@@ -11,21 +11,22 @@ import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.application.data.Model;
 import com.example.application.data.Tuple;
 import com.example.application.views.components.DownloadLinksArea;
+import com.example.application.views.components.Footer;
 import com.example.application.views.components.InformationLossGrid;
 import com.example.application.views.components.ModelTypePicker;
 import com.example.application.views.data.TransformationData;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -38,6 +39,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
@@ -86,14 +88,21 @@ public class ConvertView extends VerticalLayout {
 	private HorizontalLayout horizontal = new HorizontalLayout();
 	private VerticalLayout transformationLayout = new VerticalLayout();
 	private InformationLossGrid infLossGrid = new InformationLossGrid();
+	private final Logger log= LoggerFactory.getLogger("ConvertView");
 
-	private static final String READ_ERROR = "Problem reading uploaded file";
-	private static final String VAR_ERROR = "There was an unsupported variability type in the model";
-	private final String UPLOAD_FOLDER = "./upload/" + VaadinSession.getCurrent().getPushId();
+	private final String READ_ERROR = "Problem reading uploaded file";
+	private final String VAR_ERROR = "There was an unsupported variability type in the model";
+	private final File UPLOAD_FOLDER = new File("./upload/" + VaadinSession.getCurrent().getPushId());
 
-	private transient Object model = null;
+	private  Object model = null;
 
 	public ConvertView() {
+		VaadinService.getCurrent().addSessionDestroyListener(l->{try {
+			FileUtils.deleteDirectory(UPLOAD_FOLDER);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}});
+		UPLOAD_FOLDER.setExecutable(false);
 		H2 title = new H2("Convert model file");
 		StringBuilder sb = new StringBuilder();
 		sb.append("Please only upload allowed file formats: ");
@@ -107,7 +116,7 @@ public class ConvertView extends VerticalLayout {
 		content.add(title, hint);
 		add(content, horizontal);
 		setPadding(false);
-		VerticalLayout footer = createFooter();
+		VerticalLayout footer = new Footer();
 		footer.setHeight("136px");
 		add(footer);
 		setJustifyContentMode(JustifyContentMode.BETWEEN);
@@ -124,40 +133,6 @@ public class ConvertView extends VerticalLayout {
 		horizontal.setWidth("100%");
 		horizontal.add(transformationLayout, infLossGrid);
 		setMargin(false);
-	}
-
-	private VerticalLayout createFooter() {
-		VerticalLayout base = new VerticalLayout();
-		HorizontalLayout hor = new HorizontalLayout();
-		VerticalLayout vert1 = new VerticalLayout();
-		VerticalLayout vert2 = new VerticalLayout();
-		hor.setPadding(false);
-		base.setPadding(false);
-		vert1.setSpacing(false);
-		hor.add(vert1, vert2);
-		Span name = new Span("Johannes Kepler Universität Linz - LIT CPS Lab");
-		Span street = new Span("Altenbergerstraße 69");
-		Span plz = new Span("4040 Linz, Österreich");
-		Anchor mail = new Anchor("mailto:secps@jku.at", "secps@jku.at");
-
-		VerticalLayout content = new VerticalLayout(name, street, plz, mail);
-		content.setWidth("350px");
-		content.setSpacing(false);
-		content.setPadding(false);
-		vert2.add(content);
-		content.setJustifyContentMode(JustifyContentMode.END);
-
-		Anchor cpsLink = new Anchor("https://www.jku.at/en/lit-cyber-physical-systems-lab/",
-				"Cyber-Physical Systems Lab ");
-		Anchor gitHubLink = new Anchor("https://github.com/SECPS/TraVarT", "GitHub");
-
-		vert1.add(cpsLink, gitHubLink);
-
-		base.add(hor);
-		base.setAlignItems(Alignment.END);
-		base.setJustifyContentMode(JustifyContentMode.END);
-		base.addClassName("footer");
-		return base;
 	}
 
 	private void initTypePicker() {
@@ -265,6 +240,7 @@ public class ConvertView extends VerticalLayout {
 		default:
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
 		}
+		if(targetFile!=null)targetFile.setReadOnly();
 		return targetFile == null ? null : targetFile.toPath();
 	}
 
@@ -403,19 +379,11 @@ public class ConvertView extends VerticalLayout {
 		File f = null;
 		try {
 			contents = IOUtils.toString(fileData, StandardCharsets.UTF_8);
-			File uploadFolder = new File(UPLOAD_FOLDER);
-			uploadFolder.mkdirs();
-			f = new File(uploadFolder, filename);
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				try {
-					FileUtils.forceDelete(uploadFolder);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}));
+			f = new File(UPLOAD_FOLDER, filename);
 			try (FileWriter fw = new FileWriter(f)) {
 				fw.write(contents);
 				fw.flush();
+				f.setReadOnly();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -431,7 +399,7 @@ public class ConvertView extends VerticalLayout {
 	private void createUploader(String... extensions) {
 		singleFileUpload.setAcceptedFileTypes(extensions);
 		singleFileUpload.addFileRejectedListener(
-				event -> showNotification("Please only upload allowed file formats.", NotificationVariant.LUMO_ERROR));
+				event -> showNotification("Please only upload supported file formats.", NotificationVariant.LUMO_ERROR));
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
 			try (InputStream fileData = memoryBuffer.getInputStream()) {
@@ -442,7 +410,7 @@ public class ConvertView extends VerticalLayout {
 				Model modeltype = detectModel(file);
 				addTypePicker(modeltype);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+				showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 				e1.printStackTrace();
 			}
 			removeLoadingBar();
