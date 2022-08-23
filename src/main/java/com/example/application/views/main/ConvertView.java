@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.example.application.data.Model;
 import com.example.application.data.Tuple;
+import com.example.application.views.components.CookieDialog;
 import com.example.application.views.components.DownloadLinksArea;
 import com.example.application.views.components.Footer;
 import com.example.application.views.components.InformationLossGrid;
@@ -88,20 +89,22 @@ public class ConvertView extends VerticalLayout {
 	private HorizontalLayout horizontal = new HorizontalLayout();
 	private VerticalLayout transformationLayout = new VerticalLayout();
 	private InformationLossGrid infLossGrid = new InformationLossGrid();
-	private final Logger log= LoggerFactory.getLogger("ConvertView");
+	private final Logger log = LoggerFactory.getLogger("ConvertView");
 
 	private final String READ_ERROR = "Problem reading uploaded file";
 	private final String VAR_ERROR = "There was an unsupported variability type in the model";
 	private final File UPLOAD_FOLDER = new File("./upload/" + VaadinSession.getCurrent().getPushId());
 
-	private  Object model = null;
+	private Object model = null;
 
 	public ConvertView() {
-		VaadinService.getCurrent().addSessionDestroyListener(l->{try {
-			FileUtils.deleteDirectory(UPLOAD_FOLDER);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}});
+		VaadinService.getCurrent().addSessionDestroyListener(l -> {
+			try {
+				FileUtils.deleteDirectory(UPLOAD_FOLDER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 		UPLOAD_FOLDER.setExecutable(false);
 		H2 title = new H2("Convert model file");
 		StringBuilder sb = new StringBuilder();
@@ -174,22 +177,22 @@ public class ConvertView extends VerticalLayout {
 		if (model instanceof IOvModel ovModel) {
 			data.setSourceConstCount(ovModel.getConstraintCount());
 			data.setSourceVarCount(ovModel.getNumberOfVariationPoints());
-			data.setTransformType(new Tuple<>(Model.OVM,typePicker.getSelection()));
+			data.setTransformType(new Tuple<>(Model.OVM, typePicker.getSelection()));
 		} else if (model instanceof IDecisionModel decModel) {
-			data.setSourceConstCount( DecisionModelUtils.countRules(decModel));
+			data.setSourceConstCount(DecisionModelUtils.countRules(decModel));
 			data.setSourceVarCount(DecisionModelUtils.getNumberOfDecisions(decModel));
-			data.setTransformType(new Tuple<>(Model.DECISION,typePicker.getSelection()));
+			data.setTransformType(new Tuple<>(Model.DECISION, typePicker.getSelection()));
 		} else if (model instanceof UVLModel uvlModel) {
 			// TODO integrate UVL
 			showNotification("UVL currently not supported", NotificationVariant.LUMO_CONTRAST);
 		} else if (model instanceof IFeatureModel featModel) {
 			data.setSourceConstCount(featModel.getConstraintCount());
 			data.setSourceVarCount(featModel.getNumberOfFeatures());
-			data.setTransformType(new Tuple<>(Model.FEATURE,typePicker.getSelection()));
+			data.setTransformType(new Tuple<>(Model.FEATURE, typePicker.getSelection()));
 		} else if (model instanceof AssemblySequence pprModel) {
 			data.setSourceConstCount(PprDslUtils.getNumberOfConstraints(pprModel));
 			data.setSourceVarCount(PprDslUtils.getNumberOfProducts(pprModel));
-			data.setTransformType(new Tuple<>(Model.PPRDSL,typePicker.getSelection()));
+			data.setTransformType(new Tuple<>(Model.PPRDSL, typePicker.getSelection()));
 		}
 	}
 
@@ -207,14 +210,14 @@ public class ConvertView extends VerticalLayout {
 			targetFile = new File(targetPath.toString(), newFileName + ".xml");
 			featWriter.write(pivotModel, targetFile.toPath());
 			break;
-		case UVL: 
+		case UVL:
 			showNotification("UVL currently not supported", NotificationVariant.LUMO_ERROR);
-			break; //TODO
+			break; // TODO
 		case OVM:
 			FeatureModeltoOvModelTransformer ovnmTransformer = new FeatureModeltoOvModelTransformer();
 			OvModelWriter ovmWriter = new OvModelWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.OVM).get(0));
-			IOvModel ovTargetModel=ovnmTransformer.transform(pivotModel);
+			IOvModel ovTargetModel = ovnmTransformer.transform(pivotModel);
 			transformation.setTargetConstCount(ovTargetModel.getConstraintCount());
 			transformation.setTargetVarCount(ovTargetModel.getNumberOfVariationPoints());
 			ovmWriter.write(ovTargetModel, targetFile.toPath());
@@ -223,7 +226,7 @@ public class ConvertView extends VerticalLayout {
 			FeatureModelToPprDslTransformer pprTransformer = new FeatureModelToPprDslTransformer();
 			PprDslWriter pprWriter = new PprDslWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.PPRDSL).get(0));
-			AssemblySequence pprTargetModel=pprTransformer.transform(pivotModel);
+			AssemblySequence pprTargetModel = pprTransformer.transform(pivotModel);
 			transformation.setTargetConstCount(PprDslUtils.getNumberOfConstraints(pprTargetModel));
 			transformation.setTargetVarCount(PprDslUtils.getNumberOfProducts(pprTargetModel));
 			pprWriter.write(pprTargetModel, targetFile.toPath());
@@ -232,7 +235,7 @@ public class ConvertView extends VerticalLayout {
 			FeatureModeltoDecisionModelTransformer decisionTransformer = new FeatureModeltoDecisionModelTransformer();
 			DecisionModelWriter decisionWriter = new DecisionModelWriter();
 			targetFile = new File(targetPath.toString(), newFileName + Model.getExtensions(Model.DECISION).get(0));
-			IDecisionModel decTargetModel= decisionTransformer.transform(pivotModel);
+			IDecisionModel decTargetModel = decisionTransformer.transform(pivotModel);
 			transformation.setTargetConstCount(DecisionModelUtils.countRules(decTargetModel));
 			transformation.setTargetVarCount(DecisionModelUtils.getNumberOfDecisions(decTargetModel));
 			decisionWriter.write(decTargetModel, targetFile.toPath());
@@ -240,7 +243,8 @@ public class ConvertView extends VerticalLayout {
 		default:
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
 		}
-		if(targetFile!=null)targetFile.setReadOnly();
+		if (targetFile != null)
+			targetFile.setReadOnly();
 		return targetFile == null ? null : targetFile.toPath();
 	}
 
@@ -398,8 +402,8 @@ public class ConvertView extends VerticalLayout {
 
 	private void createUploader(String... extensions) {
 		singleFileUpload.setAcceptedFileTypes(extensions);
-		singleFileUpload.addFileRejectedListener(
-				event -> showNotification("Please only upload supported file formats.", NotificationVariant.LUMO_ERROR));
+		singleFileUpload.addFileRejectedListener(event -> showNotification("Please only upload supported file formats.",
+				NotificationVariant.LUMO_ERROR));
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
 			try (InputStream fileData = memoryBuffer.getInputStream()) {

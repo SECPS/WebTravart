@@ -5,6 +5,10 @@ import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
+import com.example.application.views.components.CookieDialog;
 import com.example.application.views.icons.CustomIcon;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -29,35 +33,45 @@ public class MainView extends AppLayout {
 	 * 
 	 */
 	private VerticalLayout vert = new VerticalLayout();
+	private CookieDialog cookieDialog = new CookieDialog();
 	private Button tog = new Button();
-	private Icon sun= new Icon(VaadinIcon.SUN_O);
-	private Icon moon= new Icon(VaadinIcon.MOON_O);
+	private Icon sun = new Icon(VaadinIcon.SUN_O);
+	private Icon moon = new Icon(VaadinIcon.MOON_O);
 	private boolean darkMode;
-	
-	private static final String COOKIE_THEME= "theme";
-	private static final String THEME_DARK="dark";
-	private static final String THEME_LIGHT="light";
-	private static final int COOKIE_MAX_AGE=Integer.MAX_VALUE;
-	
+	private Logger log=LoggerFactory.getLogger("main");
+
+	private static final String COOKIE_THEME = "theme";
+	private static final String THEME_DARK = "dark";
+	private static final String THEME_LIGHT = "light";
+	private static final String COOKIE_OKD = "cookieok";
+	private static final int COOKIE_MAX_AGE = Integer.MAX_VALUE;
+
 	private static final long serialVersionUID = 4920006999153529869L;
-	private Map<String,Cookie> cookies=new HashMap<>(); 
+	private Map<String, Cookie> cookies = new HashMap<>();
 
 	MainView() {
 		initCookies(cookies);
 		createHeader();
-		
 		sun.setSize("30px");
 		moon.setSize("30px");
 	}
-	
-	private void initCookies(Map<String,Cookie> cooks) {
-		for(Cookie cookie:VaadinService.getCurrentRequest().getCookies()) {
-			cooks.put(cookie.getName(),cookie);
+
+	private void initCookies(Map<String, Cookie> cooks) {
+		for (Cookie cookie : VaadinService.getCurrentRequest().getCookies()) {
+			cooks.put(cookie.getName(), cookie);
 		}
-		cooks.putIfAbsent(COOKIE_THEME, new Cookie(COOKIE_THEME,THEME_LIGHT));
+		cooks.putIfAbsent(COOKIE_THEME, new Cookie(COOKIE_THEME, THEME_LIGHT));
 		initTheme(cooks.get(COOKIE_THEME));
+		if (cooks.get(COOKIE_OKD) == null) {
+			cookieDialog.open();
+			cookieDialog.addOpenedChangeListener(e-> {
+				log.info("Adding cookie ok cookie.");
+				Cookie okCookie = new Cookie(COOKIE_OKD, "yes");
+				updateCookie(okCookie);
+			});
+		}
 	}
-	
+
 	private void updateCookie(Cookie cookie) {
 		cookies.put(cookie.getName(), cookie);
 		// Make cookie expire in 2 minutes
@@ -69,9 +83,9 @@ public class MainView extends AppLayout {
 		// Save cookie
 		VaadinService.getCurrentResponse().addCookie(cookie);
 	}
-	
+
 	private void initTheme(Cookie cookie) {
-		darkMode=cookie.getValue().equals(THEME_DARK);
+		darkMode = cookie.getValue().equals(THEME_DARK);
 		setDarkTheme(darkMode);
 	}
 
@@ -81,32 +95,33 @@ public class MainView extends AppLayout {
 		H1 banner = new H1("Travart Online");
 		banner.getStyle().set("font-size", "var(--lumo-font-size-xxl)").set("margin", "0");
 		banner.setWidth("30%");
-		HorizontalLayout header = new HorizontalLayout(/*new DrawerToggle(),*/ image, banner,getThemeButton());
+		HorizontalLayout header = new HorizontalLayout(/* new DrawerToggle(), */ image, banner, getThemeButton());
 		header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-		
+
 		header.setWidth("100%");
-		header.addClassNames("py-0", "px-m","ml-l","mt-0","mb-0","mr-l");
+		header.addClassNames("py-0", "px-m", "ml-l", "mt-0", "mb-0", "mr-l");
 		header.setMargin(true);
 		addToNavbar(header);
 	}
 
 	private VerticalLayout getThemeButton() {
-		tog.addThemeVariants(ButtonVariant.LUMO_ICON,ButtonVariant.LUMO_TERTIARY_INLINE);
+		tog.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
 		tog.addClickListener(evt -> setDarkTheme(darkMode));
 		vert.setAlignItems(Alignment.END);
 		vert.add(tog);
 		vert.setMargin(false);
 		return vert;
 	}
-	
+
 	/**
-	 * Sets theme  for the page. True sets dark theme, False sets light theme.
-	 * @param darkMode2 
+	 * Sets theme for the page. True sets dark theme, False sets light theme.
+	 * 
+	 * @param darkMode2
 	 * @param b
 	 */
 	private void setDarkTheme(boolean dark) {
 		Page page = UI.getCurrent().getPage();
-		Cookie themeCookie=cookies.get(COOKIE_THEME);
+		Cookie themeCookie = cookies.get(COOKIE_THEME);
 		if (dark) {
 			page.executeJs("document.querySelector('html').setAttribute(\"theme\",\"dark\")");
 			themeCookie.setValue(THEME_DARK);
@@ -116,7 +131,7 @@ public class MainView extends AppLayout {
 			themeCookie.setValue(THEME_LIGHT);
 			tog.setIcon(moon);
 		}
-		darkMode=!darkMode;
+		darkMode = !darkMode;
 		updateCookie(themeCookie);
 	}
 
