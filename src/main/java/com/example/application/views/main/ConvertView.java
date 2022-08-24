@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.example.application.data.Model;
 import com.example.application.data.Tuple;
-import com.example.application.views.components.CookieDialog;
 import com.example.application.views.components.DownloadLinksArea;
 import com.example.application.views.components.Footer;
 import com.example.application.views.components.InformationLossGrid;
