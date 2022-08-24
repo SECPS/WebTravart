@@ -156,6 +156,7 @@ public class ConvertView extends VerticalLayout {
 
 	private void initConvertButton() {
 		convertButton = new Button("Convert");
+		convertButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		convertButton.setEnabled(false);
 		convertButton.setVisible(false);
 		convertButton.addClickListener(event -> {
