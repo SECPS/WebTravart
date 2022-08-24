@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.rmi.UnexpectedException;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -103,7 +105,10 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 			}
 		});
-		UPLOAD_FOLDER.setExecutable(false);
+		
+		if(UPLOAD_FOLDER.setExecutable(false)) {
+			log.info("Successfully blocking execution on upload folder.");
+		}
 		H2 title = new H2("Convert model file");
 		StringBuilder sb = new StringBuilder();
 		sb.append("Please only upload allowed file formats: ");
@@ -111,18 +116,18 @@ public class ConvertView extends VerticalLayout {
 			sb.append(s);
 			sb.append(" ");
 		}
-		
+
 		setHeight("100%");
-		
+
 		Div hint = new Div();
 		hint.add(sb.toString());
-		Div hint2= new Div();
+		Div hint2 = new Div();
 		hint2.add("Files will be deleted once you leave the site. Applies also to generated files.");
-		site= new VerticalLayout();
+		site = new VerticalLayout();
 		site.setJustifyContentMode(JustifyContentMode.START);
 		VerticalLayout headline = new VerticalLayout();
 		headline.add(title, hint, hint2);
-		site.add(headline,horizontal);
+		site.add(headline, horizontal);
 		add(site);
 		setPadding(false);
 		VerticalLayout footer = new Footer();
@@ -280,7 +285,7 @@ public class ConvertView extends VerticalLayout {
 		return toConvert;
 	}
 
-	private Model detectModel(File file) throws IOException, NotSupportedVariablityTypeException {
+	private Model detectModel(File file) {
 		Model m = Model.NONE;
 		Optional<String> ext = getExtensionByStringHandling(file.getName());
 		if (!ext.isPresent()) {
@@ -294,23 +299,37 @@ public class ConvertView extends VerticalLayout {
 			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 		}
 		if (Model.getExtensions(Model.UVL).stream().anyMatch(e -> e.endsWith(extension))) {
-			m = parseUVLModel(contents);
+			try {
+				m = parseUVLModel(contents);
+			} catch (IOException e1) {
+			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.DECISION).stream().anyMatch(e -> e.endsWith(extension))) {
-			m = parseDecisionModel(file);
+			try {
+				m = parseDecisionModel(file);
+			} catch (IOException | NotSupportedVariablityTypeException e1) {
+			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.FEATURE).stream().anyMatch(e -> e.endsWith(extension))) {
-			m = parseFeatureModel(file);
+			try {
+				m = parseFeatureModel(file);
+			} catch (IOException | NotSupportedVariablityTypeException e1) {
+			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.PPRDSL).stream().anyMatch(e -> e.endsWith(extension))) {
-			m = parsePPRDSLModel(file);
+			try {
+				m = parsePPRDSLModel(file);
+			} catch (IOException | NotSupportedVariablityTypeException e1) {
+			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.endsWith(extension))) {
-			m = parseOVMModel(file);
+			try {
+				m = parseOVMModel(file);
+			} catch (IOException | NotSupportedVariablityTypeException e1) {
+			}
 		}
 		if (m == Model.NONE) {
 			showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
-			throw new IOException("Model Type not detected");
 		}
 		return m;
 	}
@@ -363,7 +382,9 @@ public class ConvertView extends VerticalLayout {
 			try (FileWriter fw = new FileWriter(f)) {
 				fw.write(contents);
 				fw.flush();
-				f.setReadOnly();
+				if(!f.setReadOnly()) {
+					log.error("Failed to make "+filename+" read only.");
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -394,13 +415,11 @@ public class ConvertView extends VerticalLayout {
 				file.deleteOnExit();
 				Model modeltype = detectModel(file);
 				addTypePicker(modeltype);
-			} catch (IOException| NotSupportedVariablityTypeException e) {
+			} catch (IOException e) {
 				showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 				e.printStackTrace();
 				typePicker.setEnabled(false);
 				convertButton.setEnabled(false);
-				singleFileUpload.clearFileList();
-				
 			}
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
@@ -408,12 +427,11 @@ public class ConvertView extends VerticalLayout {
 			convertButton.setEnabled(false);
 		});
 	}
-	
+
 	private static Span createDropLabel() {
-        Span cloudHint = new Span(
-                "Drop model file here.");
-        return new Span(cloudHint);
-    }
+		Span cloudHint = new Span("Drop model file here.");
+		return new Span(cloudHint);
+	}
 
 	private void addTypePicker(Model modelType) {
 		typePicker.setItemsForSourceModel(modelType);
