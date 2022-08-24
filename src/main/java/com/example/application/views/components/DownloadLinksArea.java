@@ -22,7 +22,8 @@ public class DownloadLinksArea extends VerticalLayout {
 	public DownloadLinksArea(File uploadFolder) {
 		this.uploadFolder = uploadFolder;
 		refreshFileLinks();
-		setMargin(true);
+		setMargin(false);
+		setPadding(false);
 	}
 
 	public void refreshFileLinks() {

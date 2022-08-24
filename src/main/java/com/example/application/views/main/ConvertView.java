@@ -27,13 +27,13 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
@@ -63,6 +63,7 @@ import at.jku.cps.travart.ppr.dsl.transformation.FeatureModelToPprDslTransformer
 import at.jku.cps.travart.ppr.dsl.transformation.PprDslToFeatureModelTransformer;
 import at.sqi.ppr.model.AssemblySequence;
 import de.neominik.uvl.UVLParser;
+import de.neominik.uvl.ast.ParseError;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
@@ -78,15 +79,13 @@ public class ConvertView extends VerticalLayout {
 	private static final long serialVersionUID = 2306696766319627373L;
 	private MemoryBuffer memoryBuffer = new MemoryBuffer();
 	private Upload singleFileUpload = new Upload(memoryBuffer);
-	private ProgressBar progressBar = new ProgressBar();
-	private Div progressBarLabel = new Div();
 	private ModelTypePicker typePicker;
 	private DownloadLinksArea downloads;
 	private Button convertButton;
 	private String fileName;
-	private Div progressBarSubLabel = new Div();
 	private HorizontalLayout horizontal = new HorizontalLayout();
 	private VerticalLayout transformationLayout = new VerticalLayout();
+	private VerticalLayout site;
 	private InformationLossGrid infLossGrid = new InformationLossGrid();
 	private final Logger log = LoggerFactory.getLogger("ConvertView");
 
@@ -112,11 +111,19 @@ public class ConvertView extends VerticalLayout {
 			sb.append(s);
 			sb.append(" ");
 		}
+		
 		setHeight("100%");
-		Paragraph hint = new Paragraph(sb.toString());
-		VerticalLayout content = new VerticalLayout();
-		content.add(title, hint);
-		add(content, horizontal);
+		
+		Div hint = new Div();
+		hint.add(sb.toString());
+		Div hint2= new Div();
+		hint2.add("Files will be deleted once you leave the site. Applies also to generated files.");
+		site= new VerticalLayout();
+		site.setJustifyContentMode(JustifyContentMode.START);
+		VerticalLayout headline = new VerticalLayout();
+		headline.add(title, hint, hint2);
+		site.add(headline,horizontal);
+		add(site);
 		setPadding(false);
 		VerticalLayout footer = new Footer();
 		footer.setHeight("136px");
@@ -131,6 +138,7 @@ public class ConvertView extends VerticalLayout {
 		createUploader(Model.getAllFileExtensions());
 		initConvertButton();
 		transformationLayout.add(singleFileUpload, typePicker, convertButton, downloads);
+		transformationLayout.setJustifyContentMode(JustifyContentMode.START);
 		transformationLayout.setWidth("28%");
 		horizontal.setWidth("100%");
 		horizontal.add(transformationLayout, infLossGrid);
@@ -151,7 +159,6 @@ public class ConvertView extends VerticalLayout {
 		convertButton.setEnabled(false);
 		convertButton.setVisible(false);
 		convertButton.addClickListener(event -> {
-			addLoadingBar("Converting model...");
 			Path targetPath = new File(UPLOAD_FOLDER, "convert").toPath();
 			TransformationData transformation = new TransformationData();
 			transformation.setName(fileName);
@@ -165,10 +172,10 @@ public class ConvertView extends VerticalLayout {
 				showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
 				e.printStackTrace();
 			}
-			removeLoadingBar();
 			infLossGrid.addTransformation(transformation);
 			downloads.refreshFileLinks();
 			downloads.setVisible(true);
+			downloads.scrollIntoView();
 		});
 	}
 
@@ -272,7 +279,7 @@ public class ConvertView extends VerticalLayout {
 		return toConvert;
 	}
 
-	private Model detectModel(File file) {
+	private Model detectModel(File file) throws IOException, NotSupportedVariablityTypeException {
 		Model m = Model.NONE;
 		Optional<String> ext = getExtensionByStringHandling(file.getName());
 		if (!ext.isPresent()) {
@@ -300,81 +307,50 @@ public class ConvertView extends VerticalLayout {
 		if (m == Model.NONE && Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.endsWith(extension))) {
 			m = parseOVMModel(file);
 		}
-		if (m == Model.NONE)
+		if (m == Model.NONE) {
 			showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
+			throw new IOException("Model Type not detected");
+		}
 		return m;
 	}
 
-	private Model parsePPRDSLModel(File file) {
+	private Model parsePPRDSLModel(File file) throws IOException, NotSupportedVariablityTypeException {
 		PprDslReader pprReader = new PprDslReader();
-		try {
-			model = pprReader.read(file.toPath());
-		} catch (IOException e) {
-			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		} catch (NotSupportedVariablityTypeException e) {
-			showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		}
+		model = pprReader.read(file.toPath());
 		return Model.PPRDSL;
 	}
 
-	private Model parseFeatureModel(File file) {
+	private Model parseFeatureModel(File file) throws IOException, NotSupportedVariablityTypeException {
 		FeatureModelReader fmr = new FeatureModelReader();
-		try {
-			model = fmr.read(file.toPath());
-			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
-			return Model.FEATURE;
-		} catch (IOException e) {
-			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		} catch (NotSupportedVariablityTypeException e) {
-			showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		}
-		return Model.NONE;
+		model = fmr.read(file.toPath());
+		showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
+		return Model.FEATURE;
 	}
 
-	private Model parseDecisionModel(File file) {
+	private Model parseDecisionModel(File file) throws IOException, NotSupportedVariablityTypeException {
 		DecisionModelReader dmr = new DecisionModelReader();
-		try {
-			model = dmr.read(file.toPath());
-			showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
-			return Model.DECISION;
-		} catch (IOException e) {
-			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		} catch (NotSupportedVariablityTypeException e) {
-			showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-			e.printStackTrace();
-		}
-		return Model.NONE;
+		model = dmr.read(file.toPath());
+		showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
+		return Model.DECISION;
 	}
 
-	private Model parseUVLModel(String contents) {
+	private Model parseUVLModel(String contents) throws IOException {
 		Object parseResult = UVLParser.parse(contents);
 		if (parseResult instanceof UVLModel parsedModel) {
 			model = parsedModel;
 			showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
 			return Model.UVL;
+		} else if (parseResult instanceof ParseError pError) {
+			throw new IOException("Error reading UVL file");
 		}
 		return Model.NONE;
 	}
 
-	private Model parseOVMModel(File f) {
+	private Model parseOVMModel(File f) throws IOException, NotSupportedVariablityTypeException {
 		OvModelReader ovReader = new OvModelReader();
-		try {
-			model = ovReader.read(f.toPath());
-			showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
-			return Model.OVM;
-		} catch (IOException e1) {
-			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-			e1.printStackTrace();
-		} catch (NotSupportedVariablityTypeException e1) {
-			showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-			e1.printStackTrace();
-		}
-		return Model.NONE;
+		model = ovReader.read(f.toPath());
+		showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
+		return Model.OVM;
 	}
 
 	private File safeFile(InputStream fileData, String filename) {
@@ -400,47 +376,49 @@ public class ConvertView extends VerticalLayout {
 	}
 
 	private void createUploader(String... extensions) {
+		Button uploadButton = new Button("Upload model...");
+		uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		singleFileUpload.setUploadButton(uploadButton);
+		Span dropLabel = createDropLabel();
+		singleFileUpload.setDropLabel(dropLabel);
 		singleFileUpload.setAcceptedFileTypes(extensions);
 		singleFileUpload.addFileRejectedListener(event -> showNotification("Please only upload supported file formats.",
 				NotificationVariant.LUMO_ERROR));
+		singleFileUpload.setMaxFileSize(52428800);
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
 			try (InputStream fileData = memoryBuffer.getInputStream()) {
 				fileName = event.getFileName();
-				addLoadingBar("Uploading...");
 				File file = safeFile(fileData, fileName);
 				file.deleteOnExit();
 				Model modeltype = detectModel(file);
 				addTypePicker(modeltype);
-			} catch (IOException e1) {
+			} catch (IOException| NotSupportedVariablityTypeException e) {
 				showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-				e1.printStackTrace();
+				e.printStackTrace();
+				typePicker.setEnabled(false);
+				convertButton.setEnabled(false);
+				singleFileUpload.clearFileList();
+				
 			}
-			removeLoadingBar();
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
 			typePicker.setEnabled(false);
 			convertButton.setEnabled(false);
 		});
 	}
+	
+	private static Span createDropLabel() {
+        Span cloudHint = new Span(
+                "Drop model file here.");
+        return new Span(cloudHint);
+    }
 
 	private void addTypePicker(Model modelType) {
 		typePicker.setItemsForSourceModel(modelType);
 		typePicker.setVisible(true);
 		typePicker.setEnabled(true);
 		convertButton.setVisible(true);
-	}
-
-	private void removeLoadingBar() {
-		remove(progressBarLabel, progressBar, progressBarSubLabel);
-	}
-
-	void addLoadingBar(String text) {
-		progressBar.setIndeterminate(true);
-		progressBarLabel.setText(text);
-		progressBarSubLabel.getStyle().set("font-size", "var(--lumo-font-size-xs)");
-		progressBarSubLabel.setText("Process can take a couple seconds for bigger models");
-		add(progressBarLabel, progressBar, progressBarSubLabel);
 	}
 
 	public static void showNotification(String errorText, NotificationVariant theme) {
