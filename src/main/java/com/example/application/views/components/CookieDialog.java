@@ -13,10 +13,11 @@ public class CookieDialog extends Dialog {
 	private static final String SET_PROPERTY_IN_OVERLAY_JS = "this.$.overlay.$.overlay.style[$0]=$1";
 
 	public CookieDialog() {
-		setPosition(new Position("69%", "16px"));
+		setPosition(new Position("16px", "16px"));
 		this.setModal(false);
 		this.setHeaderTitle("Cookie information");
 		this.setMaxWidth("57%");
+		enablePositioning(true);
 		this.add("We only use cookies to store your session ID and theme preference."
 				+ "We do not store or process any personal data."
 				+ "jku.at may have access to your activity on this site if you have previously accepted their cookies. "
@@ -30,7 +31,7 @@ public class CookieDialog extends Dialog {
 	private void setPosition(Position position) {
 		enablePositioning(true);
 		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "left", position.getLeft());
-		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "top", position.getTop());
+		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "bottom", position.getTop());
 	}
 
 	private void enablePositioning(boolean positioningEnabled) {
@@ -39,20 +40,20 @@ public class CookieDialog extends Dialog {
 	}
 
 	public static class Position {
-		private String top;
+		private String bottom;
 		private String left;
 
 		public Position(String top, String left) {
-			this.top = top;
+			this.bottom = top;
 			this.left = left;
 		}
 
 		public String getTop() {
-			return top;
+			return bottom;
 		}
 
 		public void setTop(String top) {
-			this.top = top;
+			this.bottom = top;
 		}
 
 		public String getLeft() {
