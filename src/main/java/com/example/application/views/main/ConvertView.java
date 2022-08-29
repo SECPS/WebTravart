@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.rmi.UnexpectedException;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -27,7 +26,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
@@ -39,8 +37,6 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -69,10 +65,8 @@ import de.neominik.uvl.ast.ParseError;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
-@Route(value = "convert", layout = MainView.class)
+@Route(value = "", layout = MainView.class)
 @PageTitle("Travart Online | Converter")
-
-@RouteAlias(value = "", layout = MainView.class)
 public class ConvertView extends VerticalLayout {
 
 	/**

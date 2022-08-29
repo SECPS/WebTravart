@@ -31,7 +31,7 @@ public class CookieDialog extends Dialog {
 	private void setPosition(Position position) {
 		enablePositioning(true);
 		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "left", position.getLeft());
-		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "bottom", position.getTop());
+		getElement().executeJs(SET_PROPERTY_IN_OVERLAY_JS, "bottom", position.getBottom());
 	}
 
 	private void enablePositioning(boolean positioningEnabled) {
@@ -43,17 +43,17 @@ public class CookieDialog extends Dialog {
 		private String bottom;
 		private String left;
 
-		public Position(String top, String left) {
-			this.bottom = top;
+		public Position(String bottom, String left) {
+			this.bottom = bottom;
 			this.left = left;
 		}
 
-		public String getTop() {
+		public String getBottom() {
 			return bottom;
 		}
 
-		public void setTop(String top) {
-			this.bottom = top;
+		public void setBottom(String bottom) {
+			this.bottom = bottom;
 		}
 
 		public String getLeft() {

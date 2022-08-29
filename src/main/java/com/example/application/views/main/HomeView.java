@@ -9,7 +9,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 
-@Route(value="home", layout=MainView.class)
+//@Route(value="home", layout=MainView.class)
 @PageTitle("Travart Online | Home")
 
 public class HomeView extends VerticalLayout {
