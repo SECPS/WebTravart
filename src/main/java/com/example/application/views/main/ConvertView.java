@@ -218,8 +218,7 @@ public class ConvertView extends VerticalLayout {
 		do {
 			try (Stream<Path> paths = Files.walk(targetPath)) {
 				String tempName = new String(newFileName);
-				if (paths.filter(Files::isRegularFile).anyMatch(f -> f.getFileName().toString()
-						.substring(0, tempName.length()).equals(tempName))) {
+				if (paths.filter(Files::isRegularFile).anyMatch(f -> f.getFileName().toString().contains(tempName))) {
 					newFileName = fileName.substring(0, fileName.length() - extensionLength) + "(" + i + ")";
 					i++;
 					duplicate = true;

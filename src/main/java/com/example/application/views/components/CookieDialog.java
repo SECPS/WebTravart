@@ -21,7 +21,7 @@ public class CookieDialog extends Dialog {
 		this.add("We only use cookies to store your session ID and theme preference. "
 				+ "We do not store or process any personal data. "
 				+ "jku.at may have access to your activity on this site if you have previously accepted their cookies. "
-				+ "All files uploaded to and generated on this site will be removed within 80 seconds of you leaving the site.");
+				+ "All files uploaded to and generated on this site will be removed within 30 minutes of you leaving the site.");
 
 		Button okButton = new Button("Ok", e ->this.close());
 		okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);

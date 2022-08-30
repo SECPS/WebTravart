@@ -12,7 +12,7 @@ public enum Model {
 	NONE("", "", ""), DECISION("Decision Model", "Decisions", "Rules", ".txt", ".csv", ".xls", ".xlsx"),
 	FEATURE("Feature Model", "Features", "Constraints", ".xml", ".csv"),
 	OVM("OVM Model", "VP & V", "Constraints", ".ovm", ".txt", ".xml"),
-	PPRDSL("PPR DSL Model", "Products", "Constraints", ".txt", ".csv"), /* TODO ask kevin about names of pprdsl */
+	PPRDSL("PPR DSL Model", "Products", "Constraints", ".txt", ".csv",".dsl"),
 	UVL("UVL Model", "Features", "Constraints", ".uvl", ".txt");
 
 	private static final Map<Model, ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
