@@ -45,6 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
 import at.jku.cps.travart.core.io.FeatureModelReader;
+import at.jku.cps.travart.core.io.FeatureModelUVLWriter;
 import at.jku.cps.travart.core.io.FeatureModelXMLWriter;
 import at.jku.cps.travart.dopler.common.DecisionModelUtils;
 import at.jku.cps.travart.dopler.decision.IDecisionModel;
@@ -242,8 +243,10 @@ public class ConvertView extends VerticalLayout {
 			featWriter.write(pivotModel, targetFile.toPath());
 			break;
 		case UVL:
-			showNotification("UVL currently not supported", NotificationVariant.LUMO_ERROR);
-			break; // TODO
+			FeatureModelUVLWriter uvlWriter=new FeatureModelUVLWriter();
+			targetFile = new File(targetPath.toString(), newFileName + ".uvl");
+			uvlWriter.write(pivotModel, targetFile.toPath());
+			break; 
 		case OVM:
 			FeatureModeltoOvModelTransformer ovnmTransformer = new FeatureModeltoOvModelTransformer();
 			OvModelWriter ovmWriter = new OvModelWriter();
