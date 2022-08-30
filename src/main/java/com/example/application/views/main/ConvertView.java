@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -45,6 +46,7 @@ import at.jku.cps.travart.core.io.FeatureModelReader;
 import at.jku.cps.travart.core.io.FeatureModelXMLWriter;
 import at.jku.cps.travart.dopler.common.DecisionModelUtils;
 import at.jku.cps.travart.dopler.decision.IDecisionModel;
+import at.jku.cps.travart.dopler.decision.model.IDecision;
 import at.jku.cps.travart.dopler.io.DecisionModelReader;
 import at.jku.cps.travart.dopler.io.DecisionModelWriter;
 import at.jku.cps.travart.dopler.transformation.DecisionModeltoFeatureModelTransformer;
@@ -180,22 +182,26 @@ public class ConvertView extends VerticalLayout {
 	}
 
 	private void setSourceMetrics(TransformationData data) {
-		if (model instanceof IOvModel ovModel) {
+		if (model instanceof IOvModel) {
+			IOvModel ovModel= (IOvModel)model;
 			data.setSourceConstCount(ovModel.getConstraintCount());
 			data.setSourceVarCount(ovModel.getNumberOfVariationPoints());
 			data.setTransformType(new Tuple<>(Model.OVM, typePicker.getSelection()));
-		} else if (model instanceof IDecisionModel decModel) {
+		} else if (model instanceof IDecisionModel ) {
+			IDecisionModel decModel=(IDecisionModel) model;
 			data.setSourceConstCount(DecisionModelUtils.countRules(decModel));
 			data.setSourceVarCount(DecisionModelUtils.getNumberOfDecisions(decModel));
 			data.setTransformType(new Tuple<>(Model.DECISION, typePicker.getSelection()));
-		} else if (model instanceof UVLModel uvlModel) {
+		} else if (model instanceof UVLModel) {
 			// TODO integrate UVL
 			showNotification("UVL currently not supported", NotificationVariant.LUMO_CONTRAST);
-		} else if (model instanceof IFeatureModel featModel) {
+		} else if (model instanceof IFeatureModel ) {
+			IFeatureModel featModel=(IFeatureModel)model;
 			data.setSourceConstCount(featModel.getConstraintCount());
 			data.setSourceVarCount(featModel.getNumberOfFeatures());
 			data.setTransformType(new Tuple<>(Model.FEATURE, typePicker.getSelection()));
-		} else if (model instanceof AssemblySequence pprModel) {
+		} else if (model instanceof AssemblySequence ) {
+			AssemblySequence pprModel=(AssemblySequence)model;
 			data.setSourceConstCount(PprDslUtils.getNumberOfConstraints(pprModel));
 			data.setSourceVarCount(PprDslUtils.getNumberOfProducts(pprModel));
 			data.setTransformType(new Tuple<>(Model.PPRDSL, typePicker.getSelection()));
@@ -257,18 +263,21 @@ public class ConvertView extends VerticalLayout {
 	private IFeatureModel convertModelToPivot(Object model) {
 		IFeatureModel toConvert = null;
 		try {
-			if (model instanceof IOvModel ovModel) {
+			if (model instanceof IOvModel ) {
+				IOvModel ovModel=(IOvModel)model;
 				OvModelToFeatureModelTransformer trans = new OvModelToFeatureModelTransformer();
 				toConvert = trans.transform(ovModel);
-			} else if (model instanceof IDecisionModel decModel) {
+			} else if (model instanceof IDecisionModel ) {
+				IDecisionModel decModel=(IDecisionModel)model;
 				DecisionModeltoFeatureModelTransformer trans = new DecisionModeltoFeatureModelTransformer();
 				toConvert = trans.transform(decModel);
-			} else if (model instanceof UVLModel uvlModel) {
-				// TODO integrate UVL
-				showNotification("UVL currently not supported", NotificationVariant.LUMO_CONTRAST);
-			} else if (model instanceof IFeatureModel featModel) {
+			} else if (model instanceof UVLModel) {
+				toConvert=(IFeatureModel)model;
+			} else if (model instanceof IFeatureModel ) {
+				IFeatureModel featModel=(IFeatureModel)model;
 				toConvert = featModel;
-			} else if (model instanceof AssemblySequence pprModel) {
+			} else if (model instanceof AssemblySequence) {
+				AssemblySequence pprModel=(AssemblySequence)model;
 				PprDslToFeatureModelTransformer trans = new PprDslToFeatureModelTransformer();
 				toConvert = trans.transform(pprModel);
 			}
@@ -280,22 +289,18 @@ public class ConvertView extends VerticalLayout {
 	}
 
 	private Model detectModel(File file) {
+		model=null;
 		Model m = Model.NONE;
 		Optional<String> ext = getExtensionByStringHandling(file.getName());
 		if (!ext.isPresent()) {
 			return Model.NONE;
 		}
-		String extension = ext.get();
-		String contents = null;
-		try (FileInputStream fileStream = new FileInputStream(file)) {
-			contents = IOUtils.toString(fileStream, StandardCharsets.UTF_8);
-		} catch (IOException e2) {
-			showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
-		}
+		String extension = ext.get();		
 		if (Model.getExtensions(Model.UVL).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
-				m = parseUVLModel(contents);
-			} catch (IOException e1) {
+				m = parseUVLModel(file);
+			} catch (IOException | NotSupportedVariablityTypeException e1) {
+				
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.DECISION).stream().anyMatch(e -> e.endsWith(extension))) {
@@ -306,7 +311,7 @@ public class ConvertView extends VerticalLayout {
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.FEATURE).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
-				m = parseFeatureModel(file);
+				m = parseFeatureModel(file,false);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 			}
 		}
@@ -334,10 +339,16 @@ public class ConvertView extends VerticalLayout {
 		return Model.PPRDSL;
 	}
 
-	private Model parseFeatureModel(File file) throws IOException, NotSupportedVariablityTypeException {
+	private Model parseFeatureModel(File file,boolean uvl) throws IOException, NotSupportedVariablityTypeException {
 		FeatureModelReader fmr = new FeatureModelReader();
 		model = fmr.read(file.toPath());
-		showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
+		if(uvl) {
+			showNotification("UVL Model2 detected", NotificationVariant.LUMO_SUCCESS);
+			return Model.UVL;
+		}else {
+			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
+		}
+		
 		return Model.FEATURE;
 	}
 
@@ -348,16 +359,9 @@ public class ConvertView extends VerticalLayout {
 		return Model.DECISION;
 	}
 
-	private Model parseUVLModel(String contents) throws IOException {
-		Object parseResult = UVLParser.parse(contents);
-		if (parseResult instanceof UVLModel parsedModel) {
-			model = parsedModel;
-			showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
-			return Model.UVL;
-		} else if (parseResult instanceof ParseError pError) {
-			throw new IOException("Error reading UVL file");
-		}
-		return Model.NONE;
+	private Model parseUVLModel(File file) throws IOException, NotSupportedVariablityTypeException {
+
+		return parseFeatureModel(file,true);
 	}
 
 	private Model parseOVMModel(File f) throws IOException, NotSupportedVariablityTypeException {

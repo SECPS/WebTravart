@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public enum Model {
 	NONE("", "", ""), DECISION("Decision Model", "Decisions", "Rules", ".txt", ".csv", ".xls", ".xlsx"),
@@ -51,6 +52,6 @@ public enum Model {
 		for (Model m : values()) {
 			l.addAll(m.extensions);
 		}
-		return l.stream().distinct().toList().toArray(size -> new String[size]);
+		return l.stream().distinct().collect(Collectors.toList()).toArray(size -> new String[size]);
 	}
 }
