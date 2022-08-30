@@ -70,24 +70,25 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 public class ConvertView extends VerticalLayout {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2306696766319627373L;
-	private MemoryBuffer memoryBuffer = new MemoryBuffer();
-	private Upload singleFileUpload = new Upload(memoryBuffer);
+	private final MemoryBuffer memoryBuffer = new MemoryBuffer();
+	private final Upload singleFileUpload = new Upload(memoryBuffer);
 	private ModelTypePicker typePicker;
-	private DownloadLinksArea downloads;
+	private final DownloadLinksArea downloads;
 	private Button convertButton;
 	private String fileName;
-	private HorizontalLayout horizontal = new HorizontalLayout();
-	private VerticalLayout transformationLayout = new VerticalLayout();
-	private VerticalLayout site;
-	private InformationLossGrid infLossGrid = new InformationLossGrid();
+	private final HorizontalLayout horizontal = new HorizontalLayout();
+	private final VerticalLayout transformationLayout = new VerticalLayout();
+	private final VerticalLayout site;
+	private final InformationLossGrid infLossGrid = new InformationLossGrid();
 	private final Logger log = LoggerFactory.getLogger("ConvertView");
 
 	private final String READ_ERROR = "Problem reading uploaded file";
 	private final String VAR_ERROR = "There was an unsupported variability type in the model";
-	private final File UPLOAD_FOLDER = new File("./upload/" + VaadinSession.getCurrent().getPushId());
+	private final File UPLOAD_FOLDER = new File(
+			System.getProperty("java.io.tmpdir") + "/" + VaadinSession.getCurrent().getPushId());
 
 	private Object model = null;
 
@@ -99,7 +100,6 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 			}
 		});
-
 		if (UPLOAD_FOLDER.setExecutable(false)) {
 			log.info("Successfully blocking execution on upload folder.");
 		}
@@ -148,8 +148,9 @@ public class ConvertView extends VerticalLayout {
 		typePicker = new ModelTypePicker();
 		typePicker.setVisible(false);
 		typePicker.addValueChangedListener(event -> {
-			if (event.getValue() != null)
+			if (event.getValue() != null) {
 				convertButton.setEnabled(true);
+			}
 		});
 	}
 
@@ -179,7 +180,7 @@ public class ConvertView extends VerticalLayout {
 		});
 	}
 
-	private void setSourceMetrics(TransformationData data) {
+	private void setSourceMetrics(final TransformationData data) {
 		if (model instanceof IOvModel) {
 			IOvModel ovModel = (IOvModel) model;
 			data.setSourceConstCount(ovModel.getConstraintCount());
@@ -206,7 +207,7 @@ public class ConvertView extends VerticalLayout {
 		}
 	}
 
-	private Path convertPivotToTarget(Path targetPath, TransformationData transformation)
+	private Path convertPivotToTarget(final Path targetPath, final TransformationData transformation)
 			throws IOException, NotSupportedVariablityTypeException {
 		IFeatureModel pivotModel = convertModelToPivot(model);
 		File targetFile = null;
@@ -237,12 +238,12 @@ public class ConvertView extends VerticalLayout {
 			featWriter.write(pivotModel, targetFile.toPath());
 			break;
 		case UVL:
-			FeatureModelUVLWriter uvlWriter=new FeatureModelUVLWriter();
+			FeatureModelUVLWriter uvlWriter = new FeatureModelUVLWriter();
 			targetFile = new File(targetPath.toString(), newFileName + ".uvl");
 			transformation.setTargetConstCount(pivotModel.getConstraintCount());
 			transformation.setTargetVarCount(pivotModel.getNumberOfFeatures());
 			uvlWriter.write(pivotModel, targetFile.toPath());
-			break; 
+			break;
 		case OVM:
 			FeatureModeltoOvModelTransformer ovnmTransformer = new FeatureModeltoOvModelTransformer();
 			OvModelWriter ovmWriter = new OvModelWriter();
@@ -273,12 +274,13 @@ public class ConvertView extends VerticalLayout {
 		default:
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
 		}
-		if (targetFile != null)
+		if (targetFile != null) {
 			targetFile.setReadOnly();
+		}
 		return targetFile == null ? null : targetFile.toPath();
 	}
 
-	private IFeatureModel convertModelToPivot(Object model) {
+	private IFeatureModel convertModelToPivot(final Object model) {
 		IFeatureModel toConvert = null;
 		try {
 			if (model instanceof IOvModel) {
@@ -306,7 +308,7 @@ public class ConvertView extends VerticalLayout {
 		return toConvert;
 	}
 
-	private Model detectModel(File file) throws IOException {
+	private Model detectModel(final File file) throws IOException {
 		model = null;
 		Model m = Model.NONE;
 		Optional<String> ext = getExtensionByStringHandling(file.getName());
@@ -351,53 +353,53 @@ public class ConvertView extends VerticalLayout {
 		return m;
 	}
 
-	private Model parsePPRDSLModel(File file) throws IOException, NotSupportedVariablityTypeException {
+	private Model parsePPRDSLModel(final File file) throws IOException, NotSupportedVariablityTypeException {
 		PprDslReader pprReader = new PprDslReader();
 		model = pprReader.read(file.toPath());
 		return Model.PPRDSL;
 	}
 
-	private Model parseFeatureModel(File file, boolean uvl) throws IOException, NotSupportedVariablityTypeException {
+	private Model parseFeatureModel(final File file, final boolean uvl)
+			throws IOException, NotSupportedVariablityTypeException {
 		FeatureModelReader fmr = new FeatureModelReader();
 		model = fmr.read(file.toPath());
 		if (uvl) {
-			if(model==null) {
+			if (model == null) {
 				showNotification("Error reading UVL Model", NotificationVariant.LUMO_ERROR);
 				throw new IOException();
 			}
 			showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
 			return Model.UVL;
-		} else {
-			if(model==null) {
-				showNotification("Error reading Feature Model", NotificationVariant.LUMO_ERROR);
-				throw new IOException();
-			}
-			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
 		}
+		if (model == null) {
+			showNotification("Error reading Feature Model", NotificationVariant.LUMO_ERROR);
+			throw new IOException();
+		}
+		showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
 
 		return Model.FEATURE;
 	}
 
-	private Model parseDecisionModel(File file) throws IOException, NotSupportedVariablityTypeException {
+	private Model parseDecisionModel(final File file) throws IOException, NotSupportedVariablityTypeException {
 		DecisionModelReader dmr = new DecisionModelReader();
 		model = dmr.read(file.toPath());
 		showNotification("Decision Model detected", NotificationVariant.LUMO_SUCCESS);
 		return Model.DECISION;
 	}
 
-	private Model parseUVLModel(File file) throws IOException, NotSupportedVariablityTypeException {
+	private Model parseUVLModel(final File file) throws IOException, NotSupportedVariablityTypeException {
 
 		return parseFeatureModel(file, true);
 	}
 
-	private Model parseOVMModel(File f) throws IOException, NotSupportedVariablityTypeException {
+	private Model parseOVMModel(final File f) throws IOException, NotSupportedVariablityTypeException {
 		OvModelReader ovReader = new OvModelReader();
 		model = ovReader.read(f.toPath());
 		showNotification("OVM Model detected", NotificationVariant.LUMO_SUCCESS);
 		return Model.OVM;
 	}
 
-	private File safeFile(InputStream fileData, String filename) {
+	private File safeFile(final InputStream fileData, final String filename) {
 		String contents = null;
 		File f = null;
 		try {
@@ -416,12 +418,12 @@ public class ConvertView extends VerticalLayout {
 		return f;
 	}
 
-	private Optional<String> getExtensionByStringHandling(String filename) {
+	private Optional<String> getExtensionByStringHandling(final String filename) {
 		return Optional.ofNullable(filename).filter(f -> f.contains("."))
 				.map(f -> f.substring(filename.lastIndexOf(".") + 1));
 	}
 
-	private void createUploader(String... extensions) {
+	private void createUploader(final String... extensions) {
 		Button uploadButton = new Button("Upload model...");
 		uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		singleFileUpload.setUploadButton(uploadButton);
@@ -457,14 +459,14 @@ public class ConvertView extends VerticalLayout {
 		return new Span(cloudHint);
 	}
 
-	private void addTypePicker(Model modelType) {
+	private void addTypePicker(final Model modelType) {
 		typePicker.setItemsForSourceModel(modelType);
 		typePicker.setVisible(true);
 		typePicker.setEnabled(true);
 		convertButton.setVisible(true);
 	}
 
-	public static void showNotification(String errorText, NotificationVariant theme) {
+	public static void showNotification(final String errorText, final NotificationVariant theme) {
 		Notification notification = new Notification();
 		notification.addThemeVariants(theme);
 		notification.setPosition(Position.BOTTOM_CENTER);
