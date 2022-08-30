@@ -15,6 +15,7 @@ public class Footer extends VerticalLayout {
 	private final Span street=new Span("Altenbergerstraße 69");
 	private final Span plz= new Span("4040 Linz, Österreich");
 	private final Anchor mail= new Anchor("mailto:secps@jku.at", "secps@jku.at");
+	private final Anchor models=new Anchor("https://litcps.jku.at/vasics/travart/travart.zip","Example models");
 	
 	
 	public Footer() {
@@ -37,7 +38,7 @@ public class Footer extends VerticalLayout {
 			"Cyber-Physical Systems Lab ");
 	Anchor gitHubLink = new Anchor("https://github.com/SECPS/TraVarT", "GitHub");
 
-	vert1.add(cpsLink, gitHubLink);
+	vert1.add(cpsLink, gitHubLink,models);
 
 	add(hor);
 	setAlignItems(Alignment.END);
