@@ -18,8 +18,8 @@ public class CookieDialog extends Dialog {
 		this.setHeaderTitle("Cookie information");
 		this.setMaxWidth("57%");
 		enablePositioning(true);
-		this.add("We only use cookies to store your session ID and theme preference."
-				+ "We do not store or process any personal data."
+		this.add("We only use cookies to store your session ID and theme preference. "
+				+ "We do not store or process any personal data. "
 				+ "jku.at may have access to your activity on this site if you have previously accepted their cookies. "
 				+ "All files uploaded to and generated on this site will be removed within 80 seconds of you leaving the site.");
 
