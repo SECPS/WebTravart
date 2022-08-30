@@ -4,7 +4,7 @@
 	<!-- Project from https://start.vaadin.com/ -->
 	<groupId>at.jku.cps.travart</groupId>
 	<artifactId>travart.gui.web</artifactId>
-	<name>Web Travart</name>
+	<name>Web TraVarT</name>
 	<version>0.0.1</version>
 	<packaging>war</packaging>
 
