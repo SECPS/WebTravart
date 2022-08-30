@@ -1,11 +1,9 @@
 package com.example.application.views.main;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +47,6 @@ import at.jku.cps.travart.core.io.FeatureModelUVLWriter;
 import at.jku.cps.travart.core.io.FeatureModelXMLWriter;
 import at.jku.cps.travart.dopler.common.DecisionModelUtils;
 import at.jku.cps.travart.dopler.decision.IDecisionModel;
-import at.jku.cps.travart.dopler.decision.model.IDecision;
 import at.jku.cps.travart.dopler.io.DecisionModelReader;
 import at.jku.cps.travart.dopler.io.DecisionModelWriter;
 import at.jku.cps.travart.dopler.transformation.DecisionModeltoFeatureModelTransformer;
@@ -65,13 +62,11 @@ import at.jku.cps.travart.ppr.dsl.io.PprDslWriter;
 import at.jku.cps.travart.ppr.dsl.transformation.FeatureModelToPprDslTransformer;
 import at.jku.cps.travart.ppr.dsl.transformation.PprDslToFeatureModelTransformer;
 import at.sqi.ppr.model.AssemblySequence;
-import de.neominik.uvl.UVLParser;
-import de.neominik.uvl.ast.ParseError;
 import de.neominik.uvl.ast.UVLModel;
 import de.ovgu.featureide.fm.core.base.IFeatureModel;
 
 @Route(value = "", layout = MainView.class)
-@PageTitle("Travart Online | Converter")
+@PageTitle("TraVarT Online")
 public class ConvertView extends VerticalLayout {
 
 	/**

@@ -27,7 +27,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.VaadinService;
 
 @JsModule("icons/custom-iconset.js")
-@PageTitle("Travart Online")
+@PageTitle("TraVarT Online")
 public class MainView extends AppLayout {
 	/**
 	 * 
@@ -92,7 +92,7 @@ public class MainView extends AppLayout {
 	private void createHeader() {
 		Icon image = CustomIcon.LOGO.create();
 		image.setSize("60px");
-		H1 banner = new H1("Travart Online");
+		H1 banner = new H1("TraVarT Online");
 		banner.getStyle().set("font-size", "var(--lumo-font-size-xxl)").set("margin", "0");
 		banner.setWidth("30%");
 		HorizontalLayout header = new HorizontalLayout(/* new DrawerToggle(), */ image, banner, getThemeButton());

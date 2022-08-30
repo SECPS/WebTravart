@@ -20,7 +20,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  */
 @SpringBootApplication
 @Theme(themeClass = Lumo.class, variant = Lumo.LIGHT)
-@PWA(name = "Travart Online", shortName = "Travart Online", offlineResources = {})
+@PWA(name = "TraVarT Online", shortName = "TraVarT Online", offlineResources = {})
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 @CssImport(value="./styles/global.css", themeFor="vaadin-grid-sorter")
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
