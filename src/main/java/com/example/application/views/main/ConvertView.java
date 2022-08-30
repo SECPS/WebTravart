@@ -240,6 +240,8 @@ public class ConvertView extends VerticalLayout {
 		case UVL:
 			FeatureModelUVLWriter uvlWriter=new FeatureModelUVLWriter();
 			targetFile = new File(targetPath.toString(), newFileName + ".uvl");
+			transformation.setTargetConstCount(pivotModel.getConstraintCount());
+			transformation.setTargetVarCount(pivotModel.getNumberOfFeatures());
 			uvlWriter.write(pivotModel, targetFile.toPath());
 			break; 
 		case OVM:
@@ -305,7 +307,7 @@ public class ConvertView extends VerticalLayout {
 		return toConvert;
 	}
 
-	private Model detectModel(File file) {
+	private Model detectModel(File file) throws IOException {
 		model = null;
 		Model m = Model.NONE;
 		Optional<String> ext = getExtensionByStringHandling(file.getName());
@@ -345,7 +347,7 @@ public class ConvertView extends VerticalLayout {
 			}
 		}
 		if (m == Model.NONE) {
-			showNotification("Model Type not detected", NotificationVariant.LUMO_ERROR);
+			throw new IOException();
 		}
 		return m;
 	}
@@ -360,9 +362,17 @@ public class ConvertView extends VerticalLayout {
 		FeatureModelReader fmr = new FeatureModelReader();
 		model = fmr.read(file.toPath());
 		if (uvl) {
-			showNotification("UVL Model2 detected", NotificationVariant.LUMO_SUCCESS);
+			if(model==null) {
+				showNotification("Error reading UVL Model", NotificationVariant.LUMO_ERROR);
+				throw new IOException();
+			}
+			showNotification("UVL Model detected", NotificationVariant.LUMO_SUCCESS);
 			return Model.UVL;
 		} else {
+			if(model==null) {
+				showNotification("Error reading Feature Model", NotificationVariant.LUMO_ERROR);
+				throw new IOException();
+			}
 			showNotification("Feature Model detected", NotificationVariant.LUMO_SUCCESS);
 		}
 
@@ -459,7 +469,7 @@ public class ConvertView extends VerticalLayout {
 		Notification notification = new Notification();
 		notification.addThemeVariants(theme);
 		notification.setPosition(Position.BOTTOM_CENTER);
-		notification.setDuration(5000);
+		notification.setDuration(8000);
 		Div text = new Div(new Text(errorText));
 
 		Button closeButton = new Button(new Icon("lumo", "cross"));
