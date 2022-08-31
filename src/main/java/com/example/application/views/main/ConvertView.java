@@ -97,7 +97,7 @@ public class ConvertView extends VerticalLayout {
 			try {
 				FileUtils.deleteDirectory(UPLOAD_FOLDER);
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.debug(e.getStackTrace().toString());
 			}
 		});
 		if (UPLOAD_FOLDER.setExecutable(false)) {
@@ -168,10 +168,10 @@ public class ConvertView extends VerticalLayout {
 				targetPath = convertPivotToTarget(targetPath, transformation);
 			} catch (IOException e) {
 				showNotification("Error happened accessing target file.", NotificationVariant.LUMO_ERROR);
-				e.printStackTrace();
+				log.debug(e.getStackTrace().toString());
 			} catch (NotSupportedVariablityTypeException e) {
 				showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-				e.printStackTrace();
+				log.debug(e.getStackTrace().toString());
 			}
 			infLossGrid.addTransformation(transformation);
 			downloads.refreshFileLinks();
@@ -275,7 +275,7 @@ public class ConvertView extends VerticalLayout {
 			showNotification("Error recognizing target model.", NotificationVariant.LUMO_ERROR);
 		}
 		if (targetFile != null) {
-			targetFile.setReadOnly();
+			targetFile.setExecutable(false);
 		}
 		return targetFile == null ? null : targetFile.toPath();
 	}
@@ -304,6 +304,7 @@ public class ConvertView extends VerticalLayout {
 		} catch (NotSupportedVariablityTypeException e) {
 			showNotification("Travart encountered an unsupported variability type during transformation",
 					NotificationVariant.LUMO_ERROR);
+			log.debug(e.getStackTrace().toString());
 		}
 		return toConvert;
 	}
@@ -320,31 +321,35 @@ public class ConvertView extends VerticalLayout {
 			try {
 				m = parseUVLModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
-
+				log.debug(e1.getStackTrace().toString());
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.DECISION).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
 				m = parseDecisionModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
+				log.debug(e1.getStackTrace().toString());
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.FEATURE).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
 				m = parseFeatureModel(file, false);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
+				log.debug(e1.getStackTrace().toString());
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.PPRDSL).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
 				m = parsePPRDSLModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
+				log.debug(e1.getStackTrace().toString());
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.endsWith(extension))) {
 			try {
 				m = parseOVMModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
+				log.debug(e1.getStackTrace().toString());
 			}
 		}
 		if (m == Model.NONE) {
@@ -408,12 +413,12 @@ public class ConvertView extends VerticalLayout {
 			try (FileWriter fw = new FileWriter(f)) {
 				fw.write(contents);
 				fw.flush();
-				if (!f.setReadOnly()) {
-					log.error("Failed to make " + filename + " read only.");
+				if (!f.setExecutable(false)) {
+					log.error("Failed to make " + filename + " non executable.");
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.debug(e.getStackTrace().toString());
 		}
 		return f;
 	}
@@ -446,6 +451,7 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 				typePicker.setEnabled(false);
 				convertButton.setEnabled(false);
+				log.debug(e.getStackTrace().toString());
 			}
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
