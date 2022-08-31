@@ -1,0 +1,23 @@
+ <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <proxies>
+        <proxy>
+            <id>JKU-proxy</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host>140.78.3.1</host>
+            <port>3128</port>
+            <username>null</username>
+            <password>null</password>
+            <nonProxyHosts>.jku.at,.im.intern,140.78.,127.,172.17.,172.18.,localhost,gitti.im.intern,artifactory.im.jku.at,sourcery.im.jku.at</nonProxyHosts>
+			<configuration>
+				<httpConfiguration>
+				  <all>
+					<connectionTimeout>120000</connectionTimeout>
+					<readTimeout>120000</readTimeout>
+				  </all>
+				</httpConfiguration>
+			</configuration>
+		</proxy>
+    </proxies>
+  </settings>

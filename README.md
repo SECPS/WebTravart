@@ -1,6 +1,6 @@
 # WebTravart
 
-This project will be used build a web interface for students and researches to try out the capabilities of Travart.
+This project will be used build a web interface for students and researches to try out the capabilities of Travart. It is supposed to be automatically build and submitted.
 
 ## Running the application
 

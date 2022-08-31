@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   sodipodi:docname="Travart Logo.svg"
+   inkscape:export-filename="C:\Users\dsalv\Filr\My Files\Travart Logo\Logo_travart.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="true"
+     inkscape:zoom="1"
+     inkscape:cx="108"
+     inkscape:cy="260"
+     inkscape:window-width="1200"
+     inkscape:window-height="1849"
+     inkscape:window-x="-1208"
+     inkscape:window-y="-182"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2">
+    <inkscape:grid
+       type="xygrid"
+       id="grid39"
+       spacingx="32"
+       spacingy="32"
+       empspacing="8" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <rect
+       x="288"
+       y="192"
+       width="224"
+       height="256"
+       id="rect18598" />
+    <rect
+       x="288"
+       y="224"
+       width="160"
+       height="224"
+       id="rect4413" />
+  </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     style="display:inline">
+    <text
+       xml:space="preserve"
+       id="text18596"
+       style="font-style:normal;font-weight:normal;font-size:400px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect18598);fill:#000000;fill-opacity:1;stroke:none"
+       transform="translate(-34.502937,-2.091087)"><tspan
+         x="288"
+         y="811.95007"
+         id="tspan119775">R</tspan></text>
+    <path
+       id="text36240"
+       style="font-size:534.918px;line-height:1.25;font-family:sans-serif;stroke-width:0;fill:#0084bb;fill-opacity:1;stroke:#046e98;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 79.677734 160 L 192 378.54883 L 192 263.30273 L 139.74219 160 L 79.677734 160 z M 371.62695 160 L 320 262.24609 L 320 378.51367 L 432.30469 160 L 371.62695 160 z " />
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       id="text4411"
+       style="fill:black;fill-opacity:1;line-height:1.25;stroke:none;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;white-space:pre;shape-inside:url(#rect4413)" />
+    <path
+       d="M 225.31463,287.0017 V 127.03354 H 145.33055 65.346471 V 96.190005 65.346471 H 256.15817 446.96986 V 96.190005 127.03354 H 366.98578 287.0017 V 287.0017 446.96986 h -30.84353 -30.84354 z"
+       id="path45163"
+       style="fill:#0084bb;fill-opacity:1;stroke:#046e98;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+</svg>
