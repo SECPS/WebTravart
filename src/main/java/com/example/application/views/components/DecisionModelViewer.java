@@ -21,43 +21,58 @@ import com.vaadin.flow.component.tabs.Tabs;
 public class DecisionModelViewer extends VerticalLayout {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5344133026954898476L;
-	private List<DopplerDecisionData> decisions=new ArrayList<>();
+	private List<DopplerDecisionData> decisions = new ArrayList<>();
 	private VerticalLayout content;
 	private static final int MAX_COL = 6;
 	private Workbook wb;
-	public DecisionModelViewer(InputStream fileData) {
+
+	public DecisionModelViewer(final InputStream fileData) {
 		try {
 			handleExcelSheet(fileData);
 		} catch (IOException e) {
-			ConvertView.showNotification("Error processing file",NotificationVariant.LUMO_ERROR);
+			ConvertView.showNotification("Error processing file", NotificationVariant.LUMO_ERROR);
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void handleExcelSheet(InputStream fileData) throws IOException {
 		wb = new XSSFWorkbook(fileData);
 
 		List<Tab> tabMap = new ArrayList<>();
 		for (int i = 0; i < wb.getNumberOfSheets(); i++) {
 			Sheet curr = wb.getSheetAt(i);
-			for(int j=1;j<=curr.getLastRowNum();j++) {
-				Row r =curr.getRow(j);
-				DopplerDecisionData decision=new DopplerDecisionData();
-				for(int k=0;k<=MAX_COL;k++) {
+			for (int j = 1; j <= curr.getLastRowNum(); j++) {
+				Row r = curr.getRow(j);
+				DopplerDecisionData decision = new DopplerDecisionData();
+				for (int k = 0; k <= MAX_COL; k++) {
 					try {
-					switch(k) {
-					case 0: decision.setId(r.getCell(k).getStringCellValue()); break;
-					case 1: decision.setQuestion(r.getCell(k).getStringCellValue());break;
-					case 2: decision.setType(r.getCell(k).getStringCellValue());break;
-					case 3: decision.setRange(r.getCell(k).getStringCellValue()); break;
-					case 4: decision.setCardinality(r.getCell(k).getStringCellValue()); break;
-					case 5: decision.setConstraint(r.getCell(k).getStringCellValue());break;
-					case 6: decision.setVisibility(r.getCell(k).getStringCellValue()); break;
-					}
-					}catch(NullPointerException e) {
+						switch (k) {
+						case 0:
+							decision.setId(r.getCell(k).getStringCellValue());
+							break;
+						case 1:
+							decision.setQuestion(r.getCell(k).getStringCellValue());
+							break;
+						case 2:
+							decision.setType(r.getCell(k).getStringCellValue());
+							break;
+						case 3:
+							decision.setRange(r.getCell(k).getStringCellValue());
+							break;
+						case 4:
+							decision.setCardinality(r.getCell(k).getStringCellValue());
+							break;
+						case 5:
+							decision.setConstraint(r.getCell(k).getStringCellValue());
+							break;
+						case 6:
+							decision.setVisibility(r.getCell(k).getStringCellValue());
+							break;
+						}
+					} catch (NullPointerException e) {
 //						throwError("Error occured in Row " +j+" and Column "+k);
 					}
 				}
@@ -71,17 +86,17 @@ public class DecisionModelViewer extends VerticalLayout {
 		for (Tab t : tabMap) {
 			tabs.add(t);
 		}
-		tabs.addSelectedChangeListener(event-> setContent(event.getSelectedTab()));
+		tabs.addSelectedChangeListener(event -> setContent(event.getSelectedTab()));
 		content = new VerticalLayout();
 		content.setSpacing(false);
 		setContent(tabs.getSelectedTab());
-		add(tabs,content);
-		
+		add(tabs, content);
+
 	}
 
 	private void setContent(Tab selectedTab) {
 		content.removeAll();
-		Grid<DopplerDecisionData> currGrid=new Grid<>(DopplerDecisionData.class,false);
+		Grid<DopplerDecisionData> currGrid = new Grid<>(DopplerDecisionData.class, false);
 		currGrid.addColumn(DopplerDecisionData::getId).setHeader("ID");
 		currGrid.addColumn(DopplerDecisionData::getQuestion).setHeader("Question").setResizable(true);
 		currGrid.addColumn(DopplerDecisionData::getType).setHeader("Type");
@@ -91,6 +106,6 @@ public class DecisionModelViewer extends VerticalLayout {
 		currGrid.addColumn(DopplerDecisionData::getVisibility).setHeader("Visibility");
 		currGrid.setItems(decisions);
 		content.add(currGrid);
-		
+
 	}
 }
