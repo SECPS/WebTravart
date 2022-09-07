@@ -435,8 +435,9 @@ public class ConvertView extends VerticalLayout {
 		Span dropLabel = createDropLabel();
 		singleFileUpload.setDropLabel(dropLabel);
 		singleFileUpload.setAcceptedFileTypes(extensions);
-		singleFileUpload.addFileRejectedListener(event -> showNotification("Please only upload supported file formats.",
-				NotificationVariant.LUMO_ERROR));
+		singleFileUpload.addFileRejectedListener(event -> {
+			showNotification("Please only upload supported file formats.", NotificationVariant.LUMO_ERROR);
+		});
 		singleFileUpload.setMaxFileSize(52428800);
 		singleFileUpload.addSucceededListener(event -> {
 			// Get information about the uploaded file
@@ -452,6 +453,7 @@ public class ConvertView extends VerticalLayout {
 				e.printStackTrace();
 				typePicker.setEnabled(false);
 				convertButton.setEnabled(false);
+				singleFileUpload.getUploadButton().getElement().setEnabled(false);
 				log.debug(e.getStackTrace().toString());
 			}
 		});
