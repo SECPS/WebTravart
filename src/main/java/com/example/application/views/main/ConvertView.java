@@ -446,6 +446,7 @@ public class ConvertView extends VerticalLayout {
 				file.deleteOnExit();
 				Model modeltype = detectModel(file);
 				addTypePicker(modeltype);
+				singleFileUpload.getUploadButton().getElement().setEnabled(false);
 			} catch (IOException e) {
 				showNotification(READ_ERROR, NotificationVariant.LUMO_ERROR);
 				e.printStackTrace();
@@ -457,6 +458,7 @@ public class ConvertView extends VerticalLayout {
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
 			typePicker.setEnabled(false);
 			convertButton.setEnabled(false);
+			singleFileUpload.getUploadButton().getElement().setEnabled(true);
 		});
 	}
 
