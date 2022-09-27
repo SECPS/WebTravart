@@ -74,9 +74,6 @@ import de.ovgu.featureide.fm.core.base.IFeatureModel;
 @PageTitle("TraVarT Online")
 public class ConvertView extends VerticalLayout {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 2306696766319627373L;
 	private final MemoryBuffer memoryBuffer = new MemoryBuffer();
 	private final Upload singleFileUpload = new Upload(memoryBuffer);
@@ -89,11 +86,10 @@ public class ConvertView extends VerticalLayout {
 	private final VerticalLayout site;
 	private final InformationLossGrid infLossGrid = new InformationLossGrid();
 	private final Logger log = LoggerFactory.getLogger("ConvertView");
-	private final Page page= UI.getCurrent().getPage();
+	private final Page page = UI.getCurrent().getPage();
 
-
-	private final String CONSOLE_ERROR ="console.error('%s')";
-	private final String CONSOLE_DEBUG ="console.debug('%s')";
+	private final String CONSOLE_ERROR = "console.error('%s')";
+	private final String CONSOLE_DEBUG = "console.debug('%s')";
 	private final String READ_ERROR = "Problem reading uploaded file";
 	private final String VAR_ERROR = "There was an unsupported variability type in the model";
 	private final File UPLOAD_FOLDER = new File(
@@ -106,7 +102,7 @@ public class ConvertView extends VerticalLayout {
 			try {
 				FileUtils.deleteDirectory(UPLOAD_FOLDER);
 			} catch (IOException e) {
-				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 				log.debug(e.getStackTrace().toString());
 			}
 		});
@@ -178,11 +174,11 @@ public class ConvertView extends VerticalLayout {
 				targetPath = convertPivotToTarget(targetPath, transformation);
 			} catch (IOException e) {
 				showNotification("Error happened accessing target file.", NotificationVariant.LUMO_ERROR);
-				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 				log.debug(e.getStackTrace().toString());
 			} catch (NotSupportedVariablityTypeException e) {
 				showNotification(VAR_ERROR, NotificationVariant.LUMO_ERROR);
-				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 				log.debug(e.getStackTrace().toString());
 			}
 			infLossGrid.addTransformation(transformation);
@@ -316,7 +312,7 @@ public class ConvertView extends VerticalLayout {
 		} catch (NotSupportedVariablityTypeException e) {
 			showNotification("Travart encountered an unsupported variability type during transformation",
 					NotificationVariant.LUMO_ERROR);
-			page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+			page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 			log.debug(e.getStackTrace().toString());
 		}
 		return toConvert;
@@ -335,7 +331,7 @@ public class ConvertView extends VerticalLayout {
 				m = parseUVLModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 				log.debug(e1.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace())));
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.DECISION).stream().anyMatch(e -> e.endsWith(extension))) {
@@ -343,7 +339,7 @@ public class ConvertView extends VerticalLayout {
 				m = parseDecisionModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 				log.debug(e1.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace())));
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.FEATURE).stream().anyMatch(e -> e.endsWith(extension))) {
@@ -351,7 +347,7 @@ public class ConvertView extends VerticalLayout {
 				m = parseFeatureModel(file, false);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 				log.debug(e1.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace())));
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.PPRDSL).stream().anyMatch(e -> e.endsWith(extension))) {
@@ -359,7 +355,7 @@ public class ConvertView extends VerticalLayout {
 				m = parsePPRDSLModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 				log.debug(e1.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_DEBUG,Arrays.toString(e1.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace())));
 			}
 		}
 		if (m == Model.NONE && Model.getExtensions(Model.OVM).stream().anyMatch(e -> e.endsWith(extension))) {
@@ -367,7 +363,7 @@ public class ConvertView extends VerticalLayout {
 				m = parseOVMModel(file);
 			} catch (IOException | NotSupportedVariablityTypeException e1) {
 				log.debug(e1.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_DEBUG, Arrays.toString(e1.getStackTrace())));
 			}
 		}
 		if (m == Model.NONE) {
@@ -397,10 +393,10 @@ public class ConvertView extends VerticalLayout {
 		System.err.flush();
 		System.setErr(old);
 		// Show what happened
-		if(baos.toString().length()>0) {
+		if (baos.toString().length() > 0) {
 			log.error(baos.toString());
 			page.executeJs(String.format(CONSOLE_DEBUG, baos.toString()));
-			showNotification(baos.toString(),NotificationVariant.LUMO_ERROR);
+			showNotification(baos.toString(), NotificationVariant.LUMO_ERROR);
 		}
 		if (uvl) {
 			if (model == null) {
@@ -452,7 +448,7 @@ public class ConvertView extends VerticalLayout {
 				}
 			}
 		} catch (IOException e) {
-			page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+			page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 			log.debug(e.getStackTrace().toString());
 		}
 		return f;
@@ -490,7 +486,7 @@ public class ConvertView extends VerticalLayout {
 				convertButton.setEnabled(false);
 				singleFileUpload.getUploadButton().getElement().setEnabled(false);
 				log.debug(e.getStackTrace().toString());
-				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace()))); 
+				page.executeJs(String.format(CONSOLE_ERROR, Arrays.toString(e.getStackTrace())));
 			}
 		});
 		singleFileUpload.getElement().addEventListener("file-remove", e -> {
