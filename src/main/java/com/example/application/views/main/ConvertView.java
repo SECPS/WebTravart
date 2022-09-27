@@ -1,9 +1,11 @@
 package com.example.application.views.main;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -383,7 +385,23 @@ public class ConvertView extends VerticalLayout {
 	private Model parseFeatureModel(final File file, final boolean uvl)
 			throws IOException, NotSupportedVariablityTypeException {
 		FeatureModelReader fmr = new FeatureModelReader();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream ps = new PrintStream(baos);
+		// IMPORTANT: Save the old System.out!
+		PrintStream old = System.err;
+		// Tell Java to use your special stream
+		System.setErr(ps);
+		// Print some output: goes to your special stream
 		model = fmr.read(file.toPath());
+		// Put things back
+		System.err.flush();
+		System.setErr(old);
+		// Show what happened
+		if(baos.toString().length()>0) {
+			log.error(baos.toString());
+			page.executeJs(String.format(CONSOLE_DEBUG, baos.toString()));
+			showNotification(baos.toString(),NotificationVariant.LUMO_ERROR);
+		}
 		if (uvl) {
 			if (model == null) {
 				showNotification("Error reading UVL Model", NotificationVariant.LUMO_ERROR);
