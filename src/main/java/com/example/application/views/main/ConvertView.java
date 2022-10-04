@@ -93,7 +93,7 @@ public class ConvertView extends VerticalLayout {
 	private final String READ_ERROR = "Problem reading uploaded file";
 	private final String VAR_ERROR = "There was an unsupported variability type in the model";
 	private final File UPLOAD_FOLDER = new File(
-			System.getProperty("java.io.tmpdir") + "/" + VaadinSession.getCurrent().getPushId());
+			System.getProperty("java.io.tmpdir") + "/" + RandomStringUtils.randomAlphanumeric(32)); // FIXME creates new folder for every tab. Should be tied to session id, but is problematic due to security handling of folders in /tmp/ -VaadinSession.getCurrent().getPushId());
 
 	private Object model = null;
 
