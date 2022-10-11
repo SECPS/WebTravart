@@ -8,6 +8,8 @@ import java.util.Map;
 import com.example.application.data.Model;
 import com.example.application.data.Tuple;
 import com.example.application.views.data.TransformationData;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
@@ -15,6 +17,8 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 @CssImport("styles/textClasses.css")
@@ -25,8 +29,32 @@ public class InformationLossGrid extends VerticalLayout {
 	private transient Map<Tuple<Model, Model>, Grid<TransformationData>> gridList = new HashMap<>();
 	private transient Map<Tuple<Model, Model>, List<TransformationData>> gridData = new HashMap<>();
 	private static final String ROTATE_TEXT = "rotateText";
+	private Button clearButton= new Button(new Icon(VaadinIcon.TRASH));
+	
+	public InformationLossGrid() {
+		clearButton.setVisible(false);
+		clearButton.setEnabled(false);
+		clearButton.addThemeVariants(ButtonVariant.LUMO_ICON);
+		clearButton.getElement().setAttribute("aria-label", "remove tables");
+		clearButton.addClickListener(e->{
+			clearTables();
+			clearButton.setEnabled(false);
+		});
+		add(clearButton);
+	}
+	
+	private void clearTables() {
+		gridList.clear();
+		gridData.clear();
+		this.removeAll();
+		add(clearButton);
+	}
 
 	public void addTransformation(TransformationData data) {
+		if(!clearButton.isVisible()|| !clearButton.isEnabled()) {
+			clearButton.setVisible(true);
+			clearButton.setEnabled(true);
+		}
 		if (gridData.get(data.getTransformType()) == null) {
 			gridData.put(data.getTransformType(), new ArrayList<>());
 			gridData.get(data.getTransformType()).add(data);
