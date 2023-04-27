@@ -1,7 +1,16 @@
+/*******************************************************************************
+ * TODO: explanation what the class does
+ *  
+ * @author Kevin Feichtinger
+ *  
+ * Copyright 2023 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * All rights reserved
+ *******************************************************************************/
 package com.example.application.data;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -9,11 +18,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum Model {
-	NONE("", "", ""), DECISION("Decision Model", "Decisions", "Rules", ".csv", ".txt", ".xls", ".xlsx"),
-	FEATURE("Feature Model", "Features", "Constraints", ".xml", ".csv"),
-	OVM("OVM Model", "VP & V", "Constraints", ".ovm", ".txt", ".xml"),
-	PPRDSL("PPR DSL Model", "Products", "Constraints", ".dsl", ".txt", ".csv"),
-	UVL("UVL Model", "Features", "Constraints", ".uvl", ".txt");
+	NONE("", "", ""), DECISION("Decision Model", "Decisions", "Rules", ".csv", ".xls", ".xlsx"),
+	FEATURE("Feature Model", "Features", "Constraints", ".xml"), OVM("OVM Model", "VP & V", "Constraints", ".ovm"),
+	PPRDSL("PPR DSL Model", "Products", "Constraints", ".dsl"), UVL("UVL Model", "Features", "Constraints", ".uvl");
 
 	private static final Map<Model, ArrayList<String>> FILE_EXTENSIONS = new EnumMap<>(Model.class);
 
@@ -30,20 +37,20 @@ public enum Model {
 
 	private final List<String> extensions;
 
-	private Model(String label, String varName, String constName, String... extensions) {
+	private Model(final String label, final String varName, final String constName, final String... extensions) {
 		this.label = label;
-		this.varPointName = varName;
-		this.constraintName = constName;
+		varPointName = varName;
+		constraintName = constName;
 		ArrayList<String> list = new ArrayList<>();
 		list.addAll(Arrays.asList(extensions));
 		this.extensions = list;
 	}
 
-	public static List<String> getExtensions(Model m) {
+	public static List<String> getExtensions(final Model m) {
 		return Collections.unmodifiableList(m.extensions);
 	}
 
-	public static String getLabel(Model m) {
+	public static String getLabel(final Model m) {
 		return m.label;
 	}
 
