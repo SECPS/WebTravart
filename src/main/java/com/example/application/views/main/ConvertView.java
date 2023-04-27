@@ -1,8 +1,8 @@
 /*******************************************************************************
  * TODO: explanation what the class does
- *  
+ *
  * @author Kevin Feichtinger
- *  
+ *
  * Copyright 2023 Johannes Kepler University Linz
  * LIT Cyber-Physical Systems Lab
  * All rights reserved
@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,6 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import at.jku.cps.travart.core.common.exc.NotSupportedVariablityTypeException;
 import at.jku.cps.travart.core.io.FeatureModelReader;
@@ -102,7 +102,16 @@ public class ConvertView extends VerticalLayout {
 	private final String READ_ERROR = "Problem reading uploaded file";
 	private final String VAR_ERROR = "There was an unsupported variability type in the model";
 	private final File UPLOAD_FOLDER = new File(
-			System.getProperty("java.io.tmpdir") + "/" + RandomStringUtils.randomAlphanumeric(32)); // FIXME creates new folder for every tab. Should be tied to session id, but is problematic due to security handling of folders in /tmp/ -VaadinSession.getCurrent().getPushId());
+			System.getProperty("java.io.tmpdir") + "/" + RandomStringUtils.randomAlphanumeric(32)); // FIXME creates new
+																									// folder for every
+																									// tab. Should be
+																									// tied to session
+																									// id, but is
+																									// problematic due
+																									// to security
+																									// handling of
+																									// folders in /tmp/
+																									// -VaadinSession.getCurrent().getPushId());
 
 	private Object model = null;
 
